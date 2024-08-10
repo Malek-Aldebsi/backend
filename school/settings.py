@@ -102,8 +102,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'defaultdb',
         'USER': 'doadmin',
-        'PASSWORD': 'AVNS_r9FGKxES_D8NlFoCCD6',
-        'HOST': 'db-postgresql-nyc3-93186-do-user-16839095-0.c.db.ondigitalocean.com',
+        'PASSWORD': 'AVNS_ufmG91lXzX2TqDOTrn7',
+        'HOST': 'db-postgresql-nyc3-75433-do-user-17463100-0.m.db.ondigitalocean.com',
         'PORT': '25060',
     }
 }
