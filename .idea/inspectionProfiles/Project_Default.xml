@@ -1,0 +1,124 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="PyPackageRequirementsInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredPackages">
+        <value>
+          <list size="85">
+            <item index="0" class="java.lang.String" itemvalue="six" />
+            <item index="1" class="java.lang.String" itemvalue="python-dateutil" />
+            <item index="2" class="java.lang.String" itemvalue="et-xmlfile" />
+            <item index="3" class="java.lang.String" itemvalue="numpy" />
+            <item index="4" class="java.lang.String" itemvalue="requests" />
+            <item index="5" class="java.lang.String" itemvalue="pandas" />
+            <item index="6" class="java.lang.String" itemvalue="filelock" />
+            <item index="7" class="java.lang.String" itemvalue="platformdirs" />
+            <item index="8" class="java.lang.String" itemvalue="certifi" />
+            <item index="9" class="java.lang.String" itemvalue="virtualenv" />
+            <item index="10" class="java.lang.String" itemvalue="charset-normalizer" />
+            <item index="11" class="java.lang.String" itemvalue="distlib" />
+            <item index="12" class="java.lang.String" itemvalue="pytz" />
+            <item index="13" class="java.lang.String" itemvalue="urllib3" />
+            <item index="14" class="java.lang.String" itemvalue="idna" />
+            <item index="15" class="java.lang.String" itemvalue="openpyxl" />
+            <item index="16" class="java.lang.String" itemvalue="Django" />
+            <item index="17" class="java.lang.String" itemvalue="tzlocal" />
+            <item index="18" class="java.lang.String" itemvalue="trio-websocket" />
+            <item index="19" class="java.lang.String" itemvalue="cffi" />
+            <item index="20" class="java.lang.String" itemvalue="psycopg2" />
+            <item index="21" class="java.lang.String" itemvalue="psycopg2-binary" />
+            <item index="22" class="java.lang.String" itemvalue="tzdata" />
+            <item index="23" class="java.lang.String" itemvalue="cryptography" />
+            <item index="24" class="java.lang.String" itemvalue="h11" />
+            <item index="25" class="java.lang.String" itemvalue="pycparser" />
+            <item index="26" class="java.lang.String" itemvalue="gunicorn" />
+            <item index="27" class="java.lang.String" itemvalue="sniffio" />
+            <item index="28" class="java.lang.String" itemvalue="APScheduler" />
+            <item index="29" class="java.lang.String" itemvalue="pytz-deprecation-shim" />
+            <item index="30" class="java.lang.String" itemvalue="wsproto" />
+            <item index="31" class="java.lang.String" itemvalue="attrs" />
+            <item index="32" class="java.lang.String" itemvalue="sortedcontainers" />
+            <item index="33" class="java.lang.String" itemvalue="trio" />
+            <item index="34" class="java.lang.String" itemvalue="PySocks" />
+            <item index="35" class="java.lang.String" itemvalue="selenium" />
+            <item index="36" class="java.lang.String" itemvalue="pyOpenSSL" />
+            <item index="37" class="java.lang.String" itemvalue="async-generator" />
+            <item index="38" class="java.lang.String" itemvalue="outcome" />
+            <item index="39" class="java.lang.String" itemvalue="SpeechRecognition" />
+            <item index="40" class="java.lang.String" itemvalue="pyrubberband" />
+            <item index="41" class="java.lang.String" itemvalue="scipy" />
+            <item index="42" class="java.lang.String" itemvalue="dj-database-url" />
+            <item index="43" class="java.lang.String" itemvalue="pydub" />
+            <item index="44" class="java.lang.String" itemvalue="youtube-dl" />
+            <item index="45" class="java.lang.String" itemvalue="django-storages" />
+            <item index="46" class="java.lang.String" itemvalue="pafy" />
+            <item index="47" class="java.lang.String" itemvalue="boto3" />
+            <item index="48" class="java.lang.String" itemvalue="django" />
+            <item index="49" class="java.lang.String" itemvalue="soundfile" />
+            <item index="50" class="java.lang.String" itemvalue="google-cloud-texttospeech" />
+            <item index="51" class="java.lang.String" itemvalue="googletrans" />
+            <item index="52" class="java.lang.String" itemvalue="gtts" />
+            <item index="53" class="java.lang.String" itemvalue="djangorestframework" />
+            <item index="54" class="java.lang.String" itemvalue="django-cors-headers" />
+            <item index="55" class="java.lang.String" itemvalue="tqdm" />
+            <item index="56" class="java.lang.String" itemvalue="torch" />
+            <item index="57" class="java.lang.String" itemvalue="Pillow" />
+            <item index="58" class="java.lang.String" itemvalue="scikit-image" />
+            <item index="59" class="java.lang.String" itemvalue="networkx" />
+            <item index="60" class="java.lang.String" itemvalue="PyYAML" />
+            <item index="61" class="java.lang.String" itemvalue="google-cloud-vision" />
+            <item index="62" class="java.lang.String" itemvalue="craft-text-detector" />
+            <item index="63" class="java.lang.String" itemvalue="torchvision" />
+            <item index="64" class="java.lang.String" itemvalue="sqlparse" />
+            <item index="65" class="java.lang.String" itemvalue="autocorrect" />
+            <item index="66" class="java.lang.String" itemvalue="gdown" />
+            <item index="67" class="java.lang.String" itemvalue="seaborn" />
+            <item index="68" class="java.lang.String" itemvalue="PyWavelets" />
+            <item index="69" class="java.lang.String" itemvalue="soupsieve" />
+            <item index="70" class="java.lang.String" itemvalue="pyparsing" />
+            <item index="71" class="java.lang.String" itemvalue="beautifulsoup4" />
+            <item index="72" class="java.lang.String" itemvalue="tifffile" />
+            <item index="73" class="java.lang.String" itemvalue="thop" />
+            <item index="74" class="java.lang.String" itemvalue="opencv-python" />
+            <item index="75" class="java.lang.String" itemvalue="pytesseract" />
+            <item index="76" class="java.lang.String" itemvalue="ipython" />
+            <item index="77" class="java.lang.String" itemvalue="packaging" />
+            <item index="78" class="java.lang.String" itemvalue="psutil" />
+            <item index="79" class="java.lang.String" itemvalue="tensorboard" />
+            <item index="80" class="java.lang.String" itemvalue="imageio" />
+            <item index="81" class="java.lang.String" itemvalue="colorama" />
+            <item index="82" class="java.lang.String" itemvalue="typing_extensions" />
+            <item index="83" class="java.lang.String" itemvalue="matplotlib" />
+            <item index="84" class="java.lang.String" itemvalue="en-core-web-sm-3.4.1" />
+          </list>
+        </value>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="E501" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N806" />
+          <option value="N803" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="django.db.models.fields.related.OneToOneField.username" />
+          <option value="apis.models.Stock.objects" />
+          <option value="apis.models.Receipt.objects" />
+          <option value="apis.models.Sales.objects" />
+          <option value="requests.models.Response.html" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

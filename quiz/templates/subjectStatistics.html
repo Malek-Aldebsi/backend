@@ -1,0 +1,104 @@
+<!-- subjects.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subjects Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f2f2f2;
+            padding: 20px;
+            direction: rtl; /* Set overall direction to right-to-left */
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: right;
+        }
+        .subject {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 20px;
+        }
+        .subject h2 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+            text-align: right;
+        }
+        .unit {
+            margin-bottom: 15px;
+            padding-right: 20px;
+            border-right: 2px solid #007bff;
+        }
+        .unit h3 {
+            color: #007bff;
+            font-size: 20px;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+        .lesson {
+            margin-right: 20px;
+            margin-bottom: 10px;
+            text-align: right;
+        }
+        .lesson h4 {
+            color: #555;
+            font-size: 18px;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+        .h1 {
+            margin-right: 40px;
+            margin-bottom: 5px;
+            text-align: right;
+        }
+        .h1 h5 {
+            color: #888;
+            font-size: 16px;
+            margin-bottom: 3px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">عدد الأسئلة</h1>
+
+        {% for subject in data %}
+        <div class="subject">
+            <h2>{{ subject.subject_name }} : {{ subject.total_ques_num }}</h2>
+
+            {% for unit in subject.units %}
+            <div class="unit">
+                <h3>{{ unit.unit_name }} : {{ unit.ques_num }}</h3>
+
+                {% for lesson in unit.lessons %}
+                <div class="lesson">
+                    <h4>{{ lesson.lesson_name }} : {{ lesson.ques_num }}</h4>
+
+                    {% for h1 in lesson.h1 %}
+                    <div class="h1">
+                        <h5>{{ h1.h1_name }} : {{ h1.ques_num }}</h5>
+                    </div>
+                    {% endfor %}
+
+                </div>
+                {% endfor %}
+
+            </div>
+            {% endfor %}
+
+        </div>
+        {% endfor %}
+
+    </div>
+</body>
+</html>

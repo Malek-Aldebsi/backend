@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <tr>
+      <th colspan="2">General Statistics of Users and Quizzes</th>
+    </tr>
+    <tr>
+      <td>Total Number of Users:</td>
+      <td>{{ total_users }}</td>
+    </tr>
+    <tr>
+      <td>Total Number of Quizzes:</td>
+      <td>{{ total_quizzes }}</td>
+    </tr>
+    <tr>
+      <td>Avg Number of Users per day:</td>
+      <td>{{ average_new_users_per_day }}</td>
+    </tr>
+    <tr>
+      <td>Avg Number of Quizzes per day:</td>
+      <td>{{ average_new_quizzes_per_day }}</td>
+    </tr>
+    <tr>
+      <td>Maximum Number of Users per day:</td>
+      <td>{{ max_new_users_per_day }}</td>
+    </tr>
+    <tr>
+      <td>Maximum Number of Quizzes per day:</td>
+      <td>{{ max_new_quizzes_per_day }}</td>
+    </tr>
+    <tr>
+      <th colspan="2">Last 3 days Statistics</th>
+    </tr>
+    <tr>
+      <td>Today's New Users:</td>
+      <td>{{ today_new_users }}</td>
+    </tr>
+    <tr>
+      <td>Today's Total Quizzes:</td>
+      <td>{{ today_total_quizzes }}</td>
+    </tr>
+    <tr>
+      <td>Yesterday's New Users:</td>
+      <td>{{ yesterday_new_users }}</td>
+    </tr>
+    <tr>
+      <td>Yesterday's Total Quizzes:</td>
+      <td>{{ yesterday_total_quizzes }}</td>
+    </tr>
+    <tr>
+      <td>Two Days Ago New Users:</td>
+      <td>{{ two_days_ago_new_users }}</td>
+    </tr>
+    <tr>
+      <td>Two Days Ago Total Quizzes:</td>
+      <td>{{ two_days_ago_total_quizzes }}</td>
+    </tr>
+    <tr>
+      <th colspan="2">Users Sign Up by Time Period</th>
+    </tr>
+    <tr>
+      <td>Total Users Signed Up between 12 AM - 6 AM:</td>
+      <td>{{ users_signup_time.am_to_am }}</td>
+    </tr>
+    <tr>
+      <td>Total Users Signed Up between 6 AM - 12 PM:</td>
+      <td>{{ users_signup_time.am_to_pm }}</td>
+    </tr>
+    <tr>
+      <td>Total Users Signed Up between 12 PM - 6 PM:</td>
+      <td>{{ users_signup_time.pm_to_pm }}</td>
+    </tr>
+    <tr>
+      <td>Total Users Signed Up between 6 PM - 12 AM:</td>
+      <td>{{ users_signup_time.pm_to_am }}</td>
+    </tr>
+    <tr>
+      <th colspan="2">Quizzes Created by Time Period</th>
+    </tr>
+    <tr>
+      <td>Total Quizzes Created between 12 AM - 6 AM:</td>
+      <td>{{ quizzes_time.am_to_am }}</td>
+    </tr>
+    <tr>
+      <td>Total Quizzes Created between 6 AM - 12 PM:</td>
+      <td>{{ quizzes_time.am_to_pm }}</td>
+    </tr>
+    <tr>
+      <td>Total Quizzes Created between 12 PM - 6 PM:</td>
+      <td>{{ quizzes_time.pm_to_pm }}</td>
+    </tr>
+    <tr>
+      <td>Total Quizzes Created between 6 PM - 12 AM:</td>
+      <td>{{ quizzes_time.pm_to_am }}</td>
+    </tr>
+  </table>
+</body>
+</html>
