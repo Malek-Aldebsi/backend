@@ -100,6 +100,10 @@ class Tag(models.Model):
         return f'{self.name}'
 
 
+class SpecialTags(Tag):
+    pass
+
+
 class Author(Tag):
     pass
 
