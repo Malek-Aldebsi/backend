@@ -63,10 +63,14 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
     headlines = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
     idealDuration = serializers.SerializerMethodField()
+    special_tags = serializers.SerializerMethodField()
 
     class Meta:
         model = FinalAnswerQuestion
-        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'type']
+        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'type', 'special_tags']
+
+    def get_special_tags(self, obj):
+        return obj.tags.exclude(specialtags=None)
 
     def get_type(self, obj):
         return 'finalAnswerQuestion'
@@ -107,10 +111,13 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     headlines = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
     idealDuration = serializers.SerializerMethodField()
-
+    special_tags = serializers.SerializerMethodField()
     class Meta:
         model = MultipleChoiceQuestion
-        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'choices', 'type']
+        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'choices', 'type', 'special_tags']
+
+    def get_special_tags(self, obj):
+        return obj.tags.exclude(specialtags=None)
 
     def get_type(self, obj):
         return 'multipleChoiceQuestion'
@@ -122,7 +129,7 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
         return obj.tags.exclude(author=None).first().author.name
 
     def get_headlines(self, obj):
-        tags = obj.tags.exclude(headbase=None).all()
+        tags = obj.tags.exclude(headbase=None)
         headlines = []
         for tag in tags:
             headbase = tag.headbase
