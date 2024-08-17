@@ -70,7 +70,7 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'type', 'special_tags']
 
     def get_special_tags(self, obj):
-        return obj.tags.exclude(specialtags=None)
+        return obj.tags.exclude(specialtags=None).values_list('name', flat=True)
 
     def get_type(self, obj):
         return 'finalAnswerQuestion'
@@ -117,7 +117,7 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
         fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'choices', 'type', 'special_tags']
 
     def get_special_tags(self, obj):
-        return obj.tags.exclude(specialtags=None)
+        return obj.tags.exclude(specialtags=None).values_list('name', flat=True)
 
     def get_type(self, obj):
         return 'multipleChoiceQuestion'
