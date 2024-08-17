@@ -45,7 +45,7 @@ urlpatterns = [
      path('suggested_quizzes/', suggested_quizzes),
      path('take_quiz/', take_quiz),
      path('subject_question_num/', subject_question_num),
-     path('subjectStatistics/<str:subject>', subjectStatistics),
+     path('subjectStatistics/<int:grade>/<str:subject>', subjectStatistics),
      path('test/', test),
      ##############################################
      # path('read_user_from_xlsx/', read_user_from_xlsx),

@@ -11,7 +11,7 @@ from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, QuestionLevel, H1, HeadLine, HeadBase, UserFinalAnswer, \
     UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
-    UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion
+    UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, SpecialTags
 from .serializers import ModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
 from django.shortcuts import render
 
@@ -1087,6 +1087,8 @@ def add_or_edit_multiple_choice_question(request):
     level = data.pop('level', None)
     levels = {1: 'easy', 2: 'inAverage', 3: 'hard'}
 
+    special_tags = data.pop('specialTags', [])
+
     if not edit:
         question = MultipleChoiceQuestion.objects.create(body=question_body)
     else:
@@ -1131,6 +1133,10 @@ def add_or_edit_multiple_choice_question(request):
     level = QuestionLevel.objects.create(name=levels[level], level=level)
     question.tags.add(level)
 
+    for special_tag in special_tags:
+        tag = SpecialTags.objects.get(name=special_tag)
+        question.tags.add(tag)
+
     question.save()
     return Response({'check': 1, 'id': str(question.id)})
 
@@ -1155,6 +1161,8 @@ def add_or_edit_final_answer_question(request):
 
     level = data.pop('level', None)
     levels = {1: 'easy', 2: 'inAverage', 3: 'hard'}
+
+    special_tags = data.pop('specialTags', [])
 
     if not edit:
         question = FinalAnswerQuestion.objects.create(body=question_body)
@@ -1196,6 +1204,10 @@ def add_or_edit_final_answer_question(request):
 
     level = QuestionLevel.objects.create(name=levels[level], level=level)
     question.tags.add(level)
+
+    for special_tag in special_tags:
+        tag = SpecialTags.objects.get(name=special_tag)
+        question.tags.add(tag)
 
     question.save()
     return Response({'check': 1, 'id': str(question.id)})
@@ -1430,11 +1442,11 @@ Discuss the benefits and drawbacks of using renewable energy sources for transpo
     return Response()
 
 
-def subjectStatistics(request, subject):
+def subjectStatistics(request, subject, grade):
     data = [
             {
                 "subject_name": subject,
-                "total_ques_num": Question.objects.filter(tags__in=Subject.objects.get(name=subject).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
+                "total_ques_num": Question.objects.filter(tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
                 "units": [
                     {
                         "unit_name": mod.name,
