@@ -1464,7 +1464,7 @@ def subjectStatistics(request, subject, grade):
                                 ],
                             } for les in Lesson.objects.filter(module=mod)
                         ],
-                    } for mod in Module.objects.filter(subject__name=subject)
+                    } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
                 ],
             },
         ]
