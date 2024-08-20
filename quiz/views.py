@@ -1568,23 +1568,23 @@ def scrape_sunject_questions(request):
 
 @api_view(['POST'])
 def test(request):
-    import random
-    from django.db import transaction
-    from .models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer
-
-    def randomize_choices_order():
-        # Retrieve all MultipleChoiceQuestion instances
-        questions = MultipleChoiceQuestion.objects.all()
-
-        for question in questions:
-            # Get all choices for the current question
-            choices = list(question.choices.all())
-            random.shuffle(choices)
-            for index, choice in enumerate(choices):
-                choice.order = index
-                choice.save()
-
-    # Call the function to apply the changes
-    randomize_choices_order()
+    # import random
+    # from django.db import transaction
+    # from .models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer
+    #
+    # def randomize_choices_order():
+    #     # Retrieve all MultipleChoiceQuestion instances
+    #     questions = MultipleChoiceQuestion.objects.all()
+    #
+    #     for question in questions:
+    #         # Get all choices for the current question
+    #         choices = list(question.choices.all())
+    #         random.shuffle(choices)
+    #         for index, choice in enumerate(choices):
+    #             choice.order = index
+    #             choice.save()
+    #
+    # # Call the function to apply the changes
+    # randomize_choices_order()
 
     return Response()
