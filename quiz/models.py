@@ -222,8 +222,8 @@ class AdminMultipleChoiceAnswer(AdminAnswer):
     order = models.IntegerField(null=True, blank=True)
     notes = models.CharField(max_length=200, null=True, blank=True)
 
-    # class Meta:
-    #     ordering = ['creationDate']
+    class Meta:
+        ordering = ['order']
     #
     # def save(self, *args, **kwargs):
     #     if self.body == 'جميع ما ذكر':
