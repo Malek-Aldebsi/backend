@@ -219,6 +219,7 @@ class UserFinalAnswer(UserAnswer):
 
 class AdminMultipleChoiceAnswer(AdminAnswer):
     image = models.ImageField(storage=MediaRootS3Boto3Storage(), null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
     notes = models.CharField(max_length=200, null=True, blank=True)
 
     # class Meta:

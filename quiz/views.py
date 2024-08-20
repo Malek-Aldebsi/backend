@@ -1119,6 +1119,12 @@ def add_or_edit_multiple_choice_question(request):
         choice = AdminMultipleChoiceAnswer.objects.create(body=choices[i], notes=notes[i])
         question.choices.add(choice)
 
+    choices = list(question.choices.all())
+    random.shuffle(choices)
+    for index, choice in enumerate(choices):
+        choice.order = index
+        choice.save()
+
     for i in range(len(headlines)):
         if headlines_level[i] == 1:
             headline = H1.objects.get(name=headlines[i].strip())
@@ -1473,7 +1479,7 @@ def subjectStatistics(request, subject, grade):
 
 
 @api_view(['POST'])
-def test(request):
+def scrape_sunject_questions(request):
     import time
     from selenium import webdriver
     from selenium.webdriver.common.by import By
@@ -1557,4 +1563,28 @@ def test(request):
             with open('ids.txt', 'a') as file:
                 print(question_index)
                 file.write(str(question.id) + "\n")
+    return Response()
+
+
+@api_view(['POST'])
+def test(request):
+    import random
+    from django.db import transaction
+    from .models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer
+
+    def randomize_choices_order():
+        # Retrieve all MultipleChoiceQuestion instances
+        questions = MultipleChoiceQuestion.objects.all()
+
+        for question in questions:
+            # Get all choices for the current question
+            choices = list(question.choices.all())
+            random.shuffle(choices)
+            for index, choice in enumerate(choices):
+                choice.order = index
+                choice.save()
+
+    # Call the function to apply the changes
+    randomize_choices_order()
+
     return Response()
