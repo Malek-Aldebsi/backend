@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 
+from quiz.models import Subject, Packages
 from school.cdn.backends import MediaRootS3Boto3Storage
 
 
@@ -37,6 +38,17 @@ class User(models.Model):
         return f'{self.firstName} {self.lastName}'
 
 
+class Account(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
+
+
+class FreeAccount(Account):
+    used_questions = models.IntegerField(default=0)
+
+
+class PaidAccount(Account):
+    pkg_list = models.ManyToManyField(Packages, null=True, blank=True)
 # class DailyTask(models.Model):
 #     from quiz.models import Subject
 #

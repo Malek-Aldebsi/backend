@@ -360,3 +360,17 @@ class UserQuiz(Quiz):
 
 class LastImageName(models.Model):
     name = models.IntegerField(null=True, blank=True)
+
+
+class Packages(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
+
+    creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    subject = models.ForeignKey(Subject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    author = models.ForeignKey(Author, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    questions = models.ManyToManyField(Question, symmetrical=False, blank=True)
+
+    def __str__(self):
+        return self.name

@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, FreeAccount, PaidAccount
 
 
 # def check_account_info(data):
@@ -17,7 +17,11 @@ def signup(data):
         return 1
 
     else:
-        User.objects.create(**data)
+        user = User.objects.create(**data)
+        if user.grade == 12:
+            FreeAccount.objects.create(user=user)
+        elif user.grade == 11:
+            PaidAccount.objects.create(user=user)
         return 0
 #
 #

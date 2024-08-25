@@ -1,7 +1,9 @@
 from datetime import timedelta
 
 from django.db.models.signals import post_save, post_delete
-from .models import UserMultipleChoiceAnswer, UserAnswer, UserMultiSectionAnswer, UserFinalAnswer
+
+from user.models import FreeAccount
+from .models import UserMultipleChoiceAnswer, UserAnswer, UserMultiSectionAnswer, UserFinalAnswer, UserQuiz
 
 
 def create_user_multiple_choice_answer(sender, instance, created, **kwargs):  # sender: which model  instance: which project or profile or etc in the model  created: is the update was create new instance
@@ -72,6 +74,17 @@ def create_user_final_answer_answer(sender, instance, created, **kwargs):
 #     answer.delete()
 
 
+def update_user_limit_questions(sender, instance, created, **kwargs):  # sender: which model  instance: which project or profile or etc in the model  created: is the update was create new instance
+    if created:
+        quiz = instance.userquiz
+        user = quiz.user
+        if user.grade == 12:
+            user_account = FreeAccount.objects.get(user=user)
+            user_account.used_questions += UserAnswer.objects.filter(quiz=quiz).count()
+            user_account.save()
+
+
+post_save.connect(update_user_limit_questions, sender=UserQuiz)
 post_save.connect(create_user_multiple_choice_answer, sender=UserMultipleChoiceAnswer)
 post_save.connect(create_user_final_answer_answer, sender=UserFinalAnswer)
 # post_save.connect(create_user_multiple_choice_answer, sender=UserMultipleChoiceAnswer)

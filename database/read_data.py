@@ -445,27 +445,105 @@
 #
 #
 # read images
-#  import pandas as pd
-#     import os
+# from django.core.files.base import File
+# import os
 #
-#     df = pd.read_excel(r'F:\kawkab\backend\database\temp\multi.xlsx')
-#     i = 0
+# questions = Question.objects.exclude(image=None)
+# for question in questions:
+#     image_name = question.image.name
+#
+#     if image_name == '.png':
+#         print(question.body)
+#     elif not image_name == '':
+#         local_file = open(fr'E:\Downloads\media\{image_name}', "rb")
+#         django_file = File(local_file)
+#
+#         question.image.save(image_name, django_file)
+#         local_file.close()
+#         os.remove(fr'E:\Downloads\media\{image_name}')
+#         question.save()
+
+
+
+# read headlines
+# import pandas as pd
+#     df = pd.read_excel(r'F:\kawkab\backend\data\histt.xlsx')
+#
+#     mod_order = 1
+#     les_order = 1
+#     h1_order = 1
+#     h2_order = 1
+#     h3_order = 1
+#
+#     pre_mod = ''
+#     pre_les = ''
+#     pre_h1 = ''
+#     pre_h2 = ''
+#     pre_h3 = ''
+#
+#     sub = Subject.objects.get(name='التاريخ', grade=11)
 #     for index, row in df.iterrows():
+#         if str(row['module']) == 'nan':
+#             continue
 #         row = row.to_dict()
-#         if str(row['image']) == 'nan':
-#             continue
-#         try:
-#             question = Question.objects.get(id=row['id'])
-#             local_file = open(fr'F:\kawkab\backend\database\images\{row["image"]}', "rb")
-#             django_file = File(local_file)
-#             img_name = LastImageName.objects.first()
-#             question.image.save(f'{img_name.name}.png', django_file)
-#             img_name.name += 1
-#             img_name.save()
-#             local_file.close()
-#             os.remove(fr'F:\kawkab\backend\database\images\{row["image"]}')
-#             question.save()
-#         except Exception as e:
-#             print(f'{i}: {row["id"]}: {e}')
-#             i += 1
-#             continue
+#         mod, _ = Module.objects.get_or_create(name=str(row['module']).strip(), subject=sub, semester=1)
+#         if _:
+#             mod.order = mod_order
+#             mod.save()
+#         if mod.name != pre_mod:
+#             pre_mod = mod.name
+#             mod_order += 1
+#             les_order = 1
+#             h1_order = 1
+#             h2_order = 1
+#             h3_order = 1
+#
+#         les, _ = Lesson.objects.get_or_create(name=str(row['lesson']).strip(), module=mod)
+#         if _:
+#             les.order = les_order
+#             les.save()
+#         if les.name != pre_les:
+#             pre_les = les.name
+#             les_order += 1
+#             h1_order = 1
+#             h2_order = 1
+#             h3_order = 1
+#
+#         if str(row['h1']) != 'nan':
+#             h1, _ = H1.objects.get_or_create(name=str(row['h1']).strip(), lesson=les)
+#             if _:
+#                 h1.order = h1_order
+#                 h1.save()
+#             if h1.name != pre_h1:
+#                 pre_h1 = h1.name
+#                 h1_order = +1
+#                 h2_order = 1
+#                 h3_order = 1
+#             if str(row['h2']) != 'nan':
+#                 h2, _ = HeadLine.objects.get_or_create(name=str(row['h2']).strip(), parent_headline=h1, level=2)
+#                 if _:
+#                     h2.order = h2_order
+#                     h2.save()
+#                 if h2.name != pre_h2:
+#                     pre_h2 = h2.name
+#                     h2_order = +1
+#                     h3_order = 1
+#                 if str(row['h3']) != 'nan':
+#                     h3, _ = HeadLine.objects.get_or_create(name=str(row['h3']).strip(), parent_headline=h2, level=3)
+#                     if _:
+#                         h3.order = h3_order
+#                         h3.save()
+#                     if h3.name != pre_h3:
+#                         pre_h3 = h3.name
+#                         h3_order = +1
+
+        # mod = Module.objects.filter(name=str(row['module']).strip())
+        # les = Lesson.objects.filter(name=str(row['lesson']).strip())
+        # h1 = H1.objects.filter(name=str(row['h1']).strip())
+        # h2 = HeadLine.objects.filter(name=str(row['h2']).strip())
+        # h3 = HeadLine.objects.filter(name=str(row['h3']).strip())
+        # h3.delete()
+        # h2.delete()
+        # h1.delete()
+        # les.delete()
+        # mod.delete()

@@ -1478,92 +1478,92 @@ def subjectStatistics(request, subject, grade):
     return render(request, 'subjectStatistics.html', {'data': data})
 
 
-@api_view(['POST'])
-def scrape_sunject_questions(request):
-    import time
-    from selenium import webdriver
-    from selenium.webdriver.common.by import By
-
-    def find(xpath, extra=None):
-        while True:
-            try:
-                element = driver.find_element(By.XPATH, xpath)
-                return element
-            except:
-                if extra != None:
-                    try:
-                        element = driver.find_element(By.XPATH, extra)
-                        return element
-                    except:
-                        pass
-                time.sleep(0.01)
-
-    def _click(xpath, extra=None):
-        while True:
-            try:
-                element = find(xpath=xpath, extra=extra)
-                element.click()
-                break
-            except:
-                time.sleep(0.01)
-
-    def get_text(xpath, extra=None):
-        while True:
-            try:
-                element = find(xpath=xpath, extra=extra)
-                element = element.text
-                return element
-            except:
-                time.sleep(0.01)
-
-    driver = webdriver.Chrome()
-    while True:
-        driver.get('https://joquiz.com/سلسلة-بنك-أسئلة-التربية-الإسلامية/')
-        _click(xpath='/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[1]/div/input[4]')
-
-        while True:
-            try:
-                question_num = int(find(
-                    '/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[2]/p').text.split(
-                    '/')[1].strip())
-                break
-            except:
-                time.sleep(0.01)
-
-        selected_choice_index = 1
-        for question_index in range(question_num):
-            _click(
-                xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_index + 2}]/div/div[2]/div[{selected_choice_index}]/label')
-
-        for question_index in range(question_num):
-            question = MultipleChoiceQuestion.objects.create(body=get_text(xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_num + 3}]/div[{question_index + 2}]/div/div[1]/p')[3:].strip())
-
-            for i in range(4):
-                try:
-                    choice_text = get_text(xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_num + 3}]/div[{question_index + 2}]/div/div[2]/div[{i + 1}]').strip()
-                    if 'correct_div' in find(xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_num + 3}]/div[{question_index + 2}]/div/div[2]/div[{i + 1}]').get_attribute('class'):
-                        correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choice_text)
-                        question.choices.add(correct_answer)
-                        question.correct_answer = correct_answer
-                    else:
-                        choice = AdminMultipleChoiceAnswer.objects.create(body=choice_text)
-                        question.choices.add(choice)
-                except:
-                    continue
-            headline = H1.objects.get(name='مؤقت')
-            question.tags.add(headline)
-
-            level = QuestionLevel.objects.create(name='inAverage', level=2)
-            question.tags.add(level)
-
-            author, _ = Author.objects.get_or_create(name='فريقنا')
-            question.tags.add(author)
-
-            question.save()
-            with open('ids.txt', 'a') as file:
-                print(question_index)
-                file.write(str(question.id) + "\n")
-    return Response()
+# @api_view(['POST'])
+# def scrape_subject_questions(request):
+#     import time
+#     from selenium import webdriver
+#     from selenium.webdriver.common.by import By
+#
+#     def find(xpath, extra=None):
+#         while True:
+#             try:
+#                 element = driver.find_element(By.XPATH, xpath)
+#                 return element
+#             except:
+#                 if extra != None:
+#                     try:
+#                         element = driver.find_element(By.XPATH, extra)
+#                         return element
+#                     except:
+#                         pass
+#                 time.sleep(0.01)
+#
+#     def _click(xpath, extra=None):
+#         while True:
+#             try:
+#                 element = find(xpath=xpath, extra=extra)
+#                 element.click()
+#                 break
+#             except:
+#                 time.sleep(0.01)
+#
+#     def get_text(xpath, extra=None):
+#         while True:
+#             try:
+#                 element = find(xpath=xpath, extra=extra)
+#                 element = element.text
+#                 return element
+#             except:
+#                 time.sleep(0.01)
+#
+#     driver = webdriver.Chrome()
+#     while True:
+#         driver.get('https://joquiz.com/سلسلة-بنك-أسئلة-التربية-الإسلامية/')
+#         _click(xpath='/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[1]/div/input[4]')
+#
+#         while True:
+#             try:
+#                 question_num = int(find(
+#                     '/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[2]/p').text.split(
+#                     '/')[1].strip())
+#                 break
+#             except:
+#                 time.sleep(0.01)
+#
+#         selected_choice_index = 1
+#         for question_index in range(question_num):
+#             _click(
+#                 xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_index + 2}]/div/div[2]/div[{selected_choice_index}]/label')
+#
+#         for question_index in range(question_num):
+#             question = MultipleChoiceQuestion.objects.create(body=get_text(xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_num + 3}]/div[{question_index + 2}]/div/div[1]/p')[3:].strip())
+#
+#             for i in range(4):
+#                 try:
+#                     choice_text = get_text(xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_num + 3}]/div[{question_index + 2}]/div/div[2]/div[{i + 1}]').strip()
+#                     if 'correct_div' in find(xpath=f'/html/body/div[1]/div/div/div[2]/div/div/article/div[2]/div[1]/div[2]/form/div[{question_num + 3}]/div[{question_index + 2}]/div/div[2]/div[{i + 1}]').get_attribute('class'):
+#                         correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choice_text)
+#                         question.choices.add(correct_answer)
+#                         question.correct_answer = correct_answer
+#                     else:
+#                         choice = AdminMultipleChoiceAnswer.objects.create(body=choice_text)
+#                         question.choices.add(choice)
+#                 except:
+#                     continue
+#             headline = H1.objects.get(name='مؤقت')
+#             question.tags.add(headline)
+#
+#             level = QuestionLevel.objects.create(name='inAverage', level=2)
+#             question.tags.add(level)
+#
+#             author, _ = Author.objects.get_or_create(name='فريقنا')
+#             question.tags.add(author)
+#
+#             question.save()
+#             with open('ids.txt', 'a') as file:
+#                 print(question_index)
+#                 file.write(str(question.id) + "\n")
+#     return Response()
 
 
 @api_view(['POST'])
