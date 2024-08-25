@@ -5,7 +5,7 @@ from .models import Subject, QuestionLevel, Module, Lesson, \
     AdminAnswer, UserAnswer, AdminFinalAnswer, UserFinalAnswer, AdminMultipleChoiceAnswer, \
     UserMultipleChoiceAnswer, FinalAnswerQuestion, MultipleChoiceQuestion, Solution, AdminQuiz, UserQuiz, Question, \
     HeadLine, H1, LastImageName, Author, HeadLineInst, MultiSectionQuestion, \
-    UserMultiSectionAnswer, WritingQuestion, UserWritingAnswer, Tag, SavedQuestion, Report, SpecialTags
+    UserMultiSectionAnswer, WritingQuestion, UserWritingAnswer, Tag, SavedQuestion, Report, SpecialTags, Packages
 
 
 class ExportAllFields(ExportActionMixin, admin.ModelAdmin):
@@ -112,6 +112,15 @@ class AdminQuizAdmin(ExportActionMixin, admin.ModelAdmin):
         return obj.questions.count()
 
 
+class PackagesAdmin(ExportActionMixin, admin.ModelAdmin):
+    list_display = ('id', 'name', 'creationDate', 'subject', 'author', 'questions_num')
+    search_fields = ['id', 'name', 'creationDate', 'subject', 'author', 'questions_num']
+    ordering = ('-creationDate',)
+
+    def questions_num(self, obj):
+        return obj.questions.count()
+
+
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(MultipleChoiceQuestion, QuestionAdmin)
 admin.site.register(FinalAnswerQuestion, QuestionAdmin)
@@ -141,3 +150,5 @@ admin.site.register(SavedQuestion, SavedQuestionAdmin)
 admin.site.register(Report, ReportAdmin)
 
 admin.site.register(LastImageName, ExportAllFields)
+
+admin.site.register(Packages, PackagesAdmin)
