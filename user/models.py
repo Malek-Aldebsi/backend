@@ -1,7 +1,6 @@
 from django.db import models
 import uuid
 
-from quiz.models import Subject, Packages
 from school.cdn.backends import MediaRootS3Boto3Storage
 
 
@@ -48,6 +47,7 @@ class FreeAccount(Account):
 
 
 class PaidAccount(Account):
+    from quiz.models import Packages
     pkg_list = models.ManyToManyField(Packages, null=True, blank=True)
 # class DailyTask(models.Model):
 #     from quiz.models import Subject

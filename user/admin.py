@@ -47,7 +47,7 @@ class PaidAccountAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(FreeAccount, UserAdmin)
-admin.site.register(PaidAccount, UserAdmin)
+admin.site.register(FreeAccount, FreeAccountAdmin)
+admin.site.register(PaidAccount, PaidAccountAdmin)
 admin.site.register(Quote, ExportAllFields)
 admin.site.register(Advertisement, ExportAllFields)
