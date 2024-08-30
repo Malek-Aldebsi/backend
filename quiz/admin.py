@@ -37,6 +37,11 @@ class QuestionAdmin(ExportActionMixin, admin.ModelAdmin):
     ordering = ('-creationDate',)
 
 
+class AdminMultipleChoiceAnswerAdmin(admin.ModelAdmin):
+    search_fields = ['id', 'body']
+    ordering = ('-creationDate',)
+
+
 class SubjectAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'grade']
     ordering = ('grade',)
@@ -128,7 +133,7 @@ admin.site.register(MultiSectionQuestion, QuestionAdmin)
 admin.site.register(WritingQuestion, QuestionAdmin)
 
 admin.site.register(UserMultipleChoiceAnswer, ExportAllFields)
-admin.site.register(AdminMultipleChoiceAnswer, ExportAllFields)
+admin.site.register(AdminMultipleChoiceAnswer, AdminMultipleChoiceAnswerAdmin)
 admin.site.register(UserFinalAnswer, ExportAllFields)
 admin.site.register(AdminFinalAnswer, ExportAllFields)
 admin.site.register(UserMultiSectionAnswer, ExportAllFields)
