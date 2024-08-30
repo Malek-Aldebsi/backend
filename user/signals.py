@@ -6,7 +6,7 @@ from .models import User, PaidAccount, FreeAccount
 
 def create_user_account(sender, instance, created, **kwargs):  # sender: which model  instance: which project or profile or etc in the model  created: is the update was create new instance
     if created:
-        user = instance.user
+        user = instance
         if user.grade == 11:
             PaidAccount.objects.create(user=user)
 
