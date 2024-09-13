@@ -84,9 +84,9 @@ def edit_user_info(request):
         user.listenFrom = listenFrom
         user.save()
         if user.grade == 11:
-            FreeAccount.objects.create(user=user)
-        elif user.grade == 12:
             PaidAccount.objects.create(user=user)
+        elif user.grade == 12:
+            FreeAccount.objects.create(user=user)
         return Response(1)
 
     else:
