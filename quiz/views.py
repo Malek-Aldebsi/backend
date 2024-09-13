@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
 
 from school import settings
+from user.models import FreeAccount, PaidAccount
 from user.serializers import UserSerializer
 from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
@@ -82,6 +83,10 @@ def edit_user_info(request):
         user.school_name = school_name
         user.listenFrom = listenFrom
         user.save()
+        if user.grade == 11:
+            FreeAccount.objects.create(user=user)
+        elif user.grade == 12:
+            PaidAccount.objects.create(user=user)
         return Response(1)
 
     else:

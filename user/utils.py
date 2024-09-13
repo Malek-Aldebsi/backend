@@ -18,10 +18,7 @@ def signup(data):
 
     else:
         user = User.objects.create(**data)
-        if user.grade == 12:
-            FreeAccount.objects.create(user=user)
-        elif user.grade == 11:
-            PaidAccount.objects.create(user=user)
+
         return 0
 #
 #
