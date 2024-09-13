@@ -70,12 +70,15 @@ def dashboard(request):
 def edit_user_info(request):
     data = request.data
     age = data.pop('age', None)
+    grade = data.pop('grade', None)
     school_name = data.pop('school_name', None)
     listenFrom = data.pop('listenFrom', None)
 
+    grades = {11: 'الأول ثانوي', 12: 'التوجيهي'}
     if _check_user(data):
         user = get_user(data)
         user.age = age
+        user.grade = grades[grade]
         user.school_name = school_name
         user.listenFrom = listenFrom
         user.save()
@@ -1568,6 +1571,11 @@ def subjectStatistics(request, subject, grade):
 
 @api_view(['POST'])
 def test(request):
+    
+    return Response()
+
+# @api_view(['POST'])
+# def randomize_choice_order(request):
     # import random
     # from django.db import transaction
     # from .models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer
@@ -1586,5 +1594,5 @@ def test(request):
     #
     # # Call the function to apply the changes
     # randomize_choices_order()
-
-    return Response()
+    #
+    # return Response()
