@@ -74,7 +74,7 @@ def edit_user_info(request):
     school_name = data.pop('school_name', None)
     listenFrom = data.pop('listenFrom', None)
 
-    grades = {11: 'الأول ثانوي', 12: 'التوجيهي'}
+    grades = {'الأول ثانوي': 11, 'التوجيهي': 12}
     if _check_user(data):
         user = get_user(data)
         user.age = age
