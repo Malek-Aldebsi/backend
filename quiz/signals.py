@@ -75,7 +75,8 @@ def create_user_final_answer_answer(sender, instance, created, **kwargs):
 
 
 def update_user_limit_questions(sender, instance, created, **kwargs):  # sender: which model  instance: which project or profile or etc in the model  created: is the update was create new instance
-    if created:
+    if not created:
+        print('called')
         quiz = instance.userquiz
         user = quiz.user
         if user.grade == 12:

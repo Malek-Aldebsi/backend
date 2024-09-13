@@ -385,7 +385,7 @@ def mark_quiz(request):
 
         ideal_duration = "{}".format(str(datetime.timedelta(seconds=round(ideal_duration))))
         attempt_duration = "{}".format(str(datetime.timedelta(seconds=round(attempt_duration))))
-
+        quiz.save()
         return Response({'total_question_num': len(answers) + question_num, 'correct_questions': correct_questions,
                          'ideal_duration': ideal_duration, 'attempt_duration': attempt_duration,
                          'quiz_id': quiz.id, 'best_worst_skills': best_worst_skills})
