@@ -25,7 +25,7 @@ class User(models.Model):
     firstName = models.CharField(max_length=30, null=True, blank=True)
     lastName = models.CharField(max_length=30, null=True, blank=True)
 
-    grade = models.IntegerField(default=12, blank=True)
+    grade = models.IntegerField(null=True, blank=True)
     age = models.IntegerField(null=True, blank=True)
 
     school_name = models.CharField(max_length=100, null=True, blank=True)
