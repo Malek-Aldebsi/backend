@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
-from .models import Subject, QuestionLevel, Module, Lesson, \
+from .models import Subject, Module, Lesson, \
     AdminAnswer, UserAnswer, AdminFinalAnswer, UserFinalAnswer, AdminMultipleChoiceAnswer, \
     UserMultipleChoiceAnswer, FinalAnswerQuestion, MultipleChoiceQuestion, Solution, AdminQuiz, UserQuiz, Question, \
     HeadLine, H1, LastImageName, Author, HeadLineInst, MultiSectionQuestion, \

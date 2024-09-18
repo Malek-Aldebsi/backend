@@ -59,15 +59,6 @@
 #     return Response()
 #
 #
-# @api_view(['GET'])
-# def read_question_level_from_xlsx(request):
-#     df = pd.read_excel(r'F:\kawkab\backend\database\question_level.xlsx')
-#
-#     for index, row in df.iterrows():
-#         row = row.to_dict()
-#         question_level, _ = QuestionLevel.objects.get_or_create(id=row['id'] if str(row['id']) != 'nan' else None, name=row['name'] if str(row['name']) != 'nan' else None, level=row['level'] if str(row['level']) != 'nan' else None)
-#         question_level.save()
-#     return Response()
 #
 #
 # @api_view(['GET'])
@@ -119,12 +110,10 @@
 #         tags = Tag.objects.filter(id__in=row['tags'].split(','))
 #         correct_answer = AdminFinalAnswer.objects.get(id=row['correct_answer'])
 #         creationDate = parse_datetime(row['creationDate'])
-#         final_answer_question, _ = FinalAnswerQuestion.objects.get_or_create(id=row['id'] if str(row['id']) != 'nan' else None, sub=row['sub'] if str(row['sub']) != 'nan' else None, body=row['body'] if str(row['body']) != 'nan' else None, idealDuration=parse_duration(row['idealDuration']) if str(row['idealDuration']) != 'nan' else None, hint=row['hint'] if str(row['hint']) != 'nan' else None, correct_answer=correct_answer)
+#         final_answer_question, _ = FinalAnswerQuestion.objects.get_or_create(id=row['id'] if str(row['id']) != 'nan' else None, sub=row['sub'] if str(row['sub']) != 'nan' else None, body=row['body'] if str(row['body']) != 'nan' else None, idealDuration=parse_duration(row['idealDuration']) if str(row['idealDuration']) != 'nan' else None, hint=row['hint'] if str(row['hint']) != 'nan' else None, correct_answer=correct_answer, level=2)
 #         final_answer_question.creationDate = creationDate
 #         for tag in tags:
 #             final_answer_question.tags.add(tag)
-#         # level = QuestionLevel.objects.create(name='inAverage', level=2)
-#         # final_answer_question.tags.add(level)
 #
 #         if str(row['image']) != 'nan':
 #             local_file = open(fr'F:\kawkab\backend\database\images\{row["image"]}', "rb")

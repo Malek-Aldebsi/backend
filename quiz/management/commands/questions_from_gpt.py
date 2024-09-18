@@ -1,7 +1,7 @@
 import pandas as pd
     
 from django.core.management.base import BaseCommand, CommandError
-from quiz.models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer, Author, QuestionLevel, HeadBase
+from quiz.models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer, Author, HeadBase
 import random
 
 class Command(BaseCommand):
@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 levels = {1: 'easy', 2: 'inAverage', 3: 'hard'}
                 headline = HeadBase.objects.get(name=headlines.strip())
 
-                question = MultipleChoiceQuestion.objects.create(body=question_body)
+                question = MultipleChoiceQuestion.objects.create(body=question_body, level=level)
 
                 correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choices[0])
                 question.choices.add(correct_answer)
@@ -61,9 +61,6 @@ class Command(BaseCommand):
 
                 author, _ = Author.objects.get_or_create(name=source)
                 question.tags.add(author)
-
-                level = QuestionLevel.objects.create(name=levels[level], level=level)
-                question.tags.add(level)
 
                 # for special_tag in special_tags:
                 #     tag = SpecialTags.objects.get(name=special_tag)

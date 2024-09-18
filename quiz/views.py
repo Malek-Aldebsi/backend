@@ -10,7 +10,7 @@ from user.models import Account
 from user.serializers import UserSerializer
 from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
-    MultipleChoiceQuestion, AdminMultipleChoiceAnswer, QuestionLevel, H1, HeadLine, HeadBase, UserFinalAnswer, \
+    MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
     UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
     UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, SpecialTags
 from .serializers import ModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
@@ -194,14 +194,14 @@ def build_quiz(request):
 
     def quiz_level(level, number_of_question):  # 1-->easy, 2-->default, 3-->hard
         if level == 1:
-            return [QuestionLevel.objects.get(name='easy')] * number_of_question
+            return [1] * number_of_question
         elif level == 2:
             return random.shuffle(
-                [QuestionLevel.objects.get(name='hard')] * number_of_question // 3 +
-                [QuestionLevel.objects.get(name='inAverage')] * number_of_question // 3 +
-                [QuestionLevel.objects.get(name='easy')] * (number_of_question - 2 * number_of_question // 3))
+                [3] * number_of_question // 3 +
+                [2] * number_of_question // 3 +
+                [1] * (number_of_question - 2 * number_of_question // 3))
         elif level == 3:
-            return [QuestionLevel.objects.get(name='hard')] * number_of_question
+            return [3] * number_of_question
         else:
             return []
 
@@ -508,8 +508,7 @@ def similar_questions(request):
         return question_weight
 
     def similar_by_level(question, question_weight):
-        level = question.tags.exclude(questionlevel=None).first().questionlevel.name
-        questions = Question.objects.filter(tags__name=level, id__in=question_weight.keys(), sub=False)
+        questions = Question.objects.filter(level=question.level, id__in=question_weight.keys(), sub=False)
         for question in questions:
             question_weight[str(question.id)] += 3
         return question_weight
@@ -1095,15 +1094,16 @@ def add_or_edit_multiple_choice_question(request):
     special_tags = data.pop('specialTags', [])
 
     if not edit:
-        question = MultipleChoiceQuestion.objects.create(body=question_body)
+        question = MultipleChoiceQuestion.objects.create(body=question_body, level=level)
     else:
         question = Question.objects.get(id=question_id).multiplechoicequestion
         question.choices.all().delete()
-        question.tags.exclude(questionlevel=None).delete()
         question.tags.clear()
-        question.save()
 
         question.body = question_body
+        question.level = level
+
+        question.save()
 
     if image is not None and not edit:
         image = base64.b64decode(image)
@@ -1141,9 +1141,6 @@ def add_or_edit_multiple_choice_question(request):
     author, _ = Author.objects.get_or_create(name=source)
     question.tags.add(author)
 
-    level = QuestionLevel.objects.create(name=levels[level], level=level)
-    question.tags.add(level)
-
     for special_tag in special_tags:
         tag = SpecialTags.objects.get(name=special_tag)
         question.tags.add(tag)
@@ -1176,17 +1173,17 @@ def add_or_edit_final_answer_question(request):
     special_tags = data.pop('specialTags', [])
 
     if not edit:
-        question = FinalAnswerQuestion.objects.create(body=question_body)
+        question = FinalAnswerQuestion.objects.create(body=question_body, level=level)
     else:
         question = Question.objects.get(id=question_id).finalanswerquestion
 
         question.correct_answer.delete()
         question.correct_answer = None
-        question.tags.exclude(questionlevel=None).delete()
         question.tags.clear()
-        question.save()
 
         question.body = question_body
+        question.level = level
+        question.save()
 
     correct_answer = AdminFinalAnswer.objects.create(body=answer)
     question.correct_answer = correct_answer
@@ -1212,9 +1209,6 @@ def add_or_edit_final_answer_question(request):
 
     author, _ = Author.objects.get_or_create(name=source)
     question.tags.add(author)
-
-    level = QuestionLevel.objects.create(name=levels[level], level=level)
-    question.tags.add(level)
 
     for special_tag in special_tags:
         tag = SpecialTags.objects.get(name=special_tag)
@@ -1248,11 +1242,11 @@ def add_or_edit_multi_section_question(request):
         question = Question.objects.get(id=question_id).multisectionquestion
 
         question.sub_questions.all().delete()
-        question.tags.exclude(questionlevel=None).delete()
         question.tags.clear()
-        question.save()
 
         question.body = question_body
+        question.level = level
+        question.save()
 
     if image is not None and not edit:
         image = base64.b64decode(image)
@@ -1297,19 +1291,14 @@ def add_or_edit_multi_section_question(request):
 
         sub_question.tags.add(author)
 
-        sub_question_level = QuestionLevel.objects.create(name=levels[ques['questionLevel']],
-                                                          level=ques['questionLevel'])
-        sub_question.tags.add(sub_question_level)
+        sub_question.level = ques['questionLevel']
         level += ques['questionLevel']
 
         sub_question.save()
 
         question.sub_questions.add(sub_question)
 
-    question_level = QuestionLevel.objects.create(name=levels[round(level / len(sub_questions))],
-                                                  level=level / len(sub_questions))
-
-    question.tags.add(question_level)
+    question.level = level / len(sub_questions)
 
     question.save()
     return Response({'check': 1, 'id': str(question.id)})
@@ -1341,11 +1330,10 @@ def add_suggested_quiz(request):
 @api_view(['GET'])
 def reset_questions_level_and_ideal_duration(request):
     questions = Question.objects.all()
-    QuestionLevel.objects.all().delete()
+
     for question in questions:
         question.idealDuration = datetime.timedelta(seconds=120)
-        level = QuestionLevel.objects.create(name='inAverage', level=2)
-        question.tags.add(level)
+        question.level = 2
         question.save()
     return Response(0)
 
@@ -1440,13 +1428,11 @@ Discuss the benefits and drawbacks of using renewable energy sources for transpo
 طرق تشجيع المطالعة وتجاوز التحديات التي تواجهها.
 """
     for i in topics:
-        level = QuestionLevel.objects.create(name='inAverage', level=2)
         author = Author.objects.get(name="المواضيع المقترحه")
         # h1 = H1.objects.get(id="aa5d8720-a404-4c00-99cd-9495781a88f7") # arabic
         h1 = H1.objects.get(id="483dbca5-de2e-4bcc-9793-e32c13f14aa0") # english
-        q = WritingQuestion.objects.create(body=i, sub=True, idealDuration=datetime.timedelta(seconds=int(1200)))
+        q = WritingQuestion.objects.create(body=i, sub=True, idealDuration=datetime.timedelta(seconds=int(1200)), level=2)
         q.tags.add(h1)
-        q.tags.add(level)
         q.tags.add(author)
         q.save()
 
@@ -1558,8 +1544,7 @@ def subjectStatistics(request, subject, grade):
 #             headline = H1.objects.get(name='مؤقت')
 #             question.tags.add(headline)
 #
-#             level = QuestionLevel.objects.create(name='inAverage', level=2)
-#             question.tags.add(level)
+#             question.level = 2
 #
 #             author, _ = Author.objects.get_or_create(name='فريقنا')
 #             question.tags.add(author)

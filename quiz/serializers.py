@@ -75,9 +75,6 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
     def get_type(self, obj):
         return 'finalAnswerQuestion'
 
-    def get_level(self, obj):
-        return round(obj.tags.exclude(questionlevel=None).first().questionlevel.level)
-
     def get_author(self, obj):
         return obj.tags.exclude(author=None).first().author.name
 
@@ -121,9 +118,6 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
 
     def get_type(self, obj):
         return 'multipleChoiceQuestion'
-
-    def get_level(self, obj):
-        return round(obj.tags.exclude(questionlevel=None).first().questionlevel.level)
 
     def get_author(self, obj):
         return obj.tags.exclude(author=None).first().author.name
@@ -199,9 +193,6 @@ class WritingQuestionSerializer(serializers.ModelSerializer):
 
     def get_type(self, obj):
         return 'writingQuestion'
-
-    def get_level(self, obj):
-        return round(obj.tags.exclude(questionlevel=None).first().questionlevel.level)
 
     def get_author(self, obj):
         return obj.tags.exclude(author=None).first().author.name

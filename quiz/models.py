@@ -108,8 +108,8 @@ class Author(Tag):
     pass
 
 
-class QuestionLevel(Tag):
-    level = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
+# class QuestionLevel(Tag):
+#     level = models.DecimalField(max_digits=10, decimal_places=8, null=True, blank=True)
 
 
 class HeadBase(Tag):
@@ -272,7 +272,7 @@ class Question(models.Model):
     idealDuration = models.DurationField(default=timedelta(seconds=120), blank=True)
 
     tags = models.ManyToManyField(Tag, related_name='tags', blank=True)
-
+    level = models.IntegerField(default=2, blank=True)
     hint = models.TextField(null=True, blank=True)
 
     def __str__(self):
