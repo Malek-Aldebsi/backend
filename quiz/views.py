@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
 
 from school import settings
-from user.models import FreeAccount, PaidAccount
+from user.models import Account
 from user.serializers import UserSerializer
 from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
@@ -83,10 +83,6 @@ def edit_user_info(request):
         user.school_name = school_name
         user.listenFrom = listenFrom
         user.save()
-        if user.grade == 11:
-            PaidAccount.objects.create(user=user)
-        elif user.grade == 12:
-            FreeAccount.objects.create(user=user)
         return Response(1)
 
     else:
@@ -209,7 +205,7 @@ def build_quiz(request):
         else:
             return []
 
-    def get_questions(lesson_headline, modules_lessons_normalized_weights, phone, quiz_level=[]):
+    def get_questions(user_packages, lesson_headline, modules_lessons_normalized_weights, phone, quiz_level=[]):
         """
         lesson_headline = {    # here headlines are from all levels 1-5
             'lesson1': {h1, h2, h3},
@@ -233,9 +229,9 @@ def build_quiz(request):
                 while len(temp_question_set) < question_num:
                     headline = list(lesson_headline[lesson])[headline_counter % len(lesson_headline[lesson])]
                     if phone:
-                        _questions = Question.objects.filter(tags=headline, sub=False).exclude(multiplechoicequestion=None)  # .filter(tags=quiz_level[0])
+                        _questions = Question.objects.filter(tags=headline, sub=False, packages__in=user_packages).exclude(multiplechoicequestion=None).distinct()  # .filter(tags=quiz_level[0])
                     else:
-                        _questions = Question.objects.filter(tags=headline, sub=False)  # .filter(tags=quiz_level[0])
+                        _questions = Question.objects.filter(tags=headline, sub=False, packages__in=user_packages).distinct()  # .filter(tags=quiz_level[0])
                     # quiz_level.pop(quiz_level[0])
                     if _questions:
                         temp_question_set.add(random.choice(_questions))
@@ -256,7 +252,7 @@ def build_quiz(request):
 
     if _check_user(data):
         user = get_user(data)
-
+        account = Account.objects.get(user=user)
         if h1_ids is None and subject is not None: # revision feature
             quizzes = UserQuiz.objects.filter(user=user, subject__id=subject)
 
@@ -284,7 +280,8 @@ def build_quiz(request):
         modules_lessons_normalized_weights = normalize_lessons_weight(modules_lessons_weights)
 
         # level = quiz_level(quiz_level, question_number)
-        questions = get_questions(lesson_headline, modules_lessons_normalized_weights, phone)
+        user_packages = account.pkg_list.all()
+        questions = get_questions(user_packages, lesson_headline, modules_lessons_normalized_weights, phone)
 
         # while recursion_num < 3 and len(questions) < question_number:
         #     print(recursion_num)
@@ -1576,7 +1573,13 @@ def subjectStatistics(request, subject, grade):
 
 @api_view(['POST'])
 def test(request):
-    
+    print('started')
+    i = 0
+    for question in MultipleChoiceQuestion.objects.all():
+        MultipleChoiceQuestion.objects.filter(body=question.body, correct_answer__body=question.correct_answer.body).exclude(id=question.id).delete()
+        i += 1
+        if i % 100 == 0:
+            print(i)
     return Response()
 
 # @api_view(['POST'])

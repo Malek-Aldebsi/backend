@@ -342,8 +342,8 @@ class Quiz(models.Model):
     subject = models.ForeignKey(Subject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     duration = models.DurationField(blank=True, null=True)
 
-    def __str__(self):
-        return f'{self.id}'
+    # def __str__(self):
+    #     return f'{self.id}'
 
 
 class AdminQuiz(Quiz):

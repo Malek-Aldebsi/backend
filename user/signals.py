@@ -1,12 +1,12 @@
 from datetime import timedelta
 
 from django.db.models.signals import post_save, post_delete
-from .models import User, PaidAccount, FreeAccount, Account
+from .models import User, Account, Account
 
 
 # def create_user_account(sender, instance, created, **kwargs):  # sender: which model  instance: which project or profile or etc in the model  created: is the update was create new instance
 #     user = instance
-#
+# add packages
 #     if user.grade == 11:
 #
 #

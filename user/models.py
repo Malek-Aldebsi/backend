@@ -38,17 +38,14 @@ class User(models.Model):
 
 
 class Account(models.Model):
+    from quiz.models import Packages
+
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-
-
-class FreeAccount(Account):
-    used_questions = models.IntegerField(default=0)
-
-
-class PaidAccount(Account):
-    from quiz.models import Packages
     pkg_list = models.ManyToManyField(Packages, blank=True)
+    shared_limit = models.IntegerField(default=0, blank=True)
+
+
 # class DailyTask(models.Model):
 #     from quiz.models import Subject
 #

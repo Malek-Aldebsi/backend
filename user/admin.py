@@ -2,7 +2,7 @@ from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
 from quiz.models import UserQuiz
-from .models import User, Quote, Advertisement, FreeAccount, PaidAccount
+from .models import User, Quote, Advertisement, Account
 
 
 class ExportAllFields(ExportActionMixin, admin.ModelAdmin):
@@ -30,14 +30,14 @@ class UserAdmin(ExportActionMixin, admin.ModelAdmin):
         return UserQuiz.objects.filter(user=obj).count()
 
 
-class FreeAccountAdmin(ExportActionMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'used_questions')
-    search_fields = ['id', 'user__name', 'used_questions']
-    ordering = (['-user__creationDate'])
+# class FreeAccountAdmin(ExportActionMixin, admin.ModelAdmin):
+#     list_display = ('id', 'user', 'used_questions')
+#     search_fields = ['id', 'user__name', 'used_questions']
+#     ordering = (['-user__creationDate'])
 
 
-class PaidAccountAdmin(ExportActionMixin, admin.ModelAdmin):
-    list_display = ('id', 'user', 'pkg_list')
+class AccountAdmin(ExportActionMixin, admin.ModelAdmin):
+    list_display = ('id', 'user', 'pkg_list', 'shared_limit')
     search_fields = ['id', 'user__name']
     ordering = (['-user__creationDate'])
 
@@ -47,7 +47,7 @@ class PaidAccountAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 admin.site.register(User, UserAdmin)
-admin.site.register(FreeAccount, FreeAccountAdmin)
-admin.site.register(PaidAccount, PaidAccountAdmin)
+# admin.site.register(FreeAccount, FreeAccountAdmin)
+admin.site.register(Account, AccountAdmin)
 admin.site.register(Quote, ExportAllFields)
 admin.site.register(Advertisement, ExportAllFields)

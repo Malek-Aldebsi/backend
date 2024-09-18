@@ -2,7 +2,7 @@ import pandas as pd
     
 from django.core.management.base import BaseCommand, CommandError
 from quiz.models import MultipleChoiceQuestion, AdminMultipleChoiceAnswer, Author, QuestionLevel, HeadBase
-
+import random
 
 class Command(BaseCommand):
     help = 'Read questions from chat GPT'
@@ -32,6 +32,7 @@ class Command(BaseCommand):
 
                 level = 2
                 levels = {1: 'easy', 2: 'inAverage', 3: 'hard'}
+                headline = HeadBase.objects.get(name=headlines.strip())
 
                 question = MultipleChoiceQuestion.objects.create(body=question_body)
 
@@ -49,7 +50,6 @@ class Command(BaseCommand):
                     choice.order = index
                     choice.save()
 
-                headline = HeadBase.objects.get(name=headlines.strip())
                 question.tags.add(headline)
                 # for i in range(len(headlines)):
                 #     if headlines_level[i] == 1:
@@ -76,3 +76,6 @@ class Command(BaseCommand):
         
         except Exception as e:
             raise CommandError(f'Error: {e}')
+
+
+# python manage.py questions_from_gpt F:\kawkab\backend\data\English_Unit_2_Vocab_Questions.xlsx
