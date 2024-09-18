@@ -58,7 +58,6 @@ class AdminMultipleChoiceAnswerSerializer(serializers.ModelSerializer):
 
 class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
     correct_answer = AdminFinalAnswerSerializer(many=False)
-    level = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     headlines = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
@@ -103,7 +102,6 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     correct_answer = AdminMultipleChoiceAnswerSerializer(many=False)
     choices = AdminMultipleChoiceAnswerSerializer(many=True)
-    level = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     headlines = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
@@ -181,7 +179,6 @@ class MultiSectionQuestionSerializer(serializers.ModelSerializer):
 
 
 class WritingQuestionSerializer(serializers.ModelSerializer):
-    level = serializers.SerializerMethodField()
     author = serializers.SerializerMethodField()
     headlines = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
