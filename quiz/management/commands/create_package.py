@@ -60,4 +60,4 @@ class Command(BaseCommand):
             raise CommandError(f'Error: {e}')
 
 # python manage.py create_package package_source_type package_source_id pkg_name subject_id author_id
-# python manage.py create_package lesson 123e0fd4-1b62-40a7-92ba-d9635927990b testing_pkg 6a4fad5e-47a8-4a7e-bd6b-a16b9ca35649 f1c21507-048e-4c15-9ae0-9c0f0cf5f0e0
+# python manage.py create_package subject d6fc02e4-4523-4d04-b678-1635b932799e his_pkg 6a4fad5e-47a8-4a7e-bd6b-a16b9ca35649 f1c21507-048e-4c15-9ae0-9c0f0cf5f0e0
