@@ -9,7 +9,7 @@ from .models import User, Account, Account
 def create_user_account(sender, instance, created, **kwargs):  # sender: which model  instance: which project or profile or etc in the model  created: is the update was create new instance
     # if created:
     user = instance
-    user_account = Account.objects.filter(user=user)
+    user_account = Account.objects.get(user=user)
 
     if user.grade == 11:
         free_pkgs = ['0febc601-5120-434c-9846-828f7fe6773b', '63deaa45-6a56-4b6c-b7f3-712bebc412af', '9165674d-eb77-42fe-9fdc-225cd15afd07', 'd92bf3a6-ae7b-4bba-be34-f3dd72dd1a55']
@@ -20,5 +20,5 @@ def create_user_account(sender, instance, created, **kwargs):  # sender: which m
     for pkg_id in free_pkgs:
         pkg = Packages.objects.get(pk=pkg_id)
         user_account.pkg_list.add(pkg)
-
+    user_account.save()
 post_save.connect(create_user_account, sender=User)
