@@ -553,6 +553,8 @@ def similar_questions(request):
                 questions.append(Question.objects.get(id=question_id))
         else:
             questions.append(Question.objects.get(id=question_id))
+    if len(questions) > 10:
+        questions = random.sample(questions, 10)
 
     serializer = QuestionSerializer(questions, many=True)
     if is_single_question:
