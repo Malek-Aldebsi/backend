@@ -12,7 +12,8 @@ from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
     UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
-    UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, SpecialTags
+    UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, \
+    SpecialTags, Packages
 from .serializers import ModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
 from django.shortcuts import render
 
@@ -1558,13 +1559,21 @@ def subjectStatistics(request, subject, grade):
 
 @api_view(['POST'])
 def test(request):
-    print('started')
-    i = 0
-    for question in MultipleChoiceQuestion.objects.all():
-        MultipleChoiceQuestion.objects.filter(body=question.body, correct_answer__body=question.correct_answer.body).exclude(id=question.id).delete()
-        i += 1
-        if i % 100 == 0:
-            print(i)
+    pkg_author = 'f1c21507-048e-4c15-9ae0-9c0f0cf5f0e0'
+    pkg_author = Author.objects.get(id=pkg_author)
+
+    for sub in Subject.objects.filter(grade=12):
+        mod = Module.objects.filter(subject=sub).first()
+
+        lessons = Lesson.objects.filter(module=mod)[:2]
+        filter_tags = set()
+        for les in lessons:
+            filter_tags |= les.get_all_headlines()
+
+        questions = Question.objects.filter(tags__in=filter_tags).distinct()
+        pkg = Packages.objects.create(name=f'{sub.name} -- 12', subject=sub, author=pkg_author)
+        pkg.questions.set(questions)
+        pkg.save()
     return Response()
 
 # @api_view(['POST'])
