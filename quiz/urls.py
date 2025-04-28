@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import subject_set, headline_set, build_quiz, mark_quiz, similar_questions, \
+from .views import read_headlines, subject_set, headline_set, build_quiz, mark_quiz, similar_questions, \
      add_or_edit_multiple_choice_question, add_or_edit_multi_section_question, add_or_edit_final_answer_question, \
      quiz_review, retake_quiz, quiz_history, subject_question_num, \
      get_admin_question, subject_question_ids, \
@@ -46,6 +46,7 @@ urlpatterns = [
      path('take_quiz/', take_quiz),
      path('subject_question_num/', subject_question_num),
      path('subjectStatistics/<int:grade>/<str:subject>', subjectStatistics),
+     path('read_headlines/', read_headlines),
      path('test/', test),
      ##############################################
      # path('read_user_from_xlsx/', read_user_from_xlsx),

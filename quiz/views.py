@@ -23,7 +23,7 @@ from django.db.models import Prefetch
 import random
 import datetime
 
-# import pandas as pd
+import pandas as pd
 from .utils import mark_final_answer_question, mark_multiple_choice_question, mark_multi_section_question, \
     review_final_answer_question, review_multi_choice_question, review_multi_section_question, \
     questions_statistics_statement
@@ -1443,31 +1443,104 @@ Discuss the benefits and drawbacks of using renewable energy sources for transpo
 
 
 def subjectStatistics(request, subject, grade):
+    
+    # data = [
+    #         {
+    #             "subject_name": subject,
+    #             "total_ques_num": Question.objects.filter(tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
+    #             "units": [
+    #                 {
+    #                     "unit_name": mod.name,
+    #                     "ques_num": Question.objects.filter(tags__in=mod.get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
+    #                     "lessons": [
+    #                         {
+    #                             "lesson_name": les.name,
+    #                             "ques_num": Question.objects.filter(tags__in=les.get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
+    #                             "h1": [
+    #                                 {
+    #                                     "h1_name": h1.name,
+    #                                     "ques_num": Question.objects.filter(tags__in=h1.get_all_child_headlines().union(
+    #                                         {h1})).filter(multisectionquestion=None).distinct().count(),
+    #                                     "h2": [
+    #                                         {
+    #                                             "h2_name": h2.name,
+    #                                             "ques_num": Question.objects.filter(tags__in=h2.get_all_child_headlines().union(
+    #                                                 {h2})).filter(multisectionquestion=None).distinct().count()                                           
+    #                                         } for h2 in HeadLine.objects.filter(parent_headline=h1)
+    #                                     ],                                                  
+    #                                 } for h1 in H1.objects.filter(lesson=les)
+    #                             ],
+    #                         } for les in Lesson.objects.filter(module=mod)
+    #                     ],
+    #                 } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
+    #             ],
+    #         },
+    #     ]
+
     data = [
-            {
-                "subject_name": subject,
-                "total_ques_num": Question.objects.filter(tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
-                "units": [
-                    {
-                        "unit_name": mod.name,
-                        "ques_num": Question.objects.filter(tags__in=mod.get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
-                        "lessons": [
-                            {
-                                "lesson_name": les.name,
-                                "ques_num": Question.objects.filter(tags__in=les.get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
-                                "h1": [
-                                    {
-                                        "h1_name": h1.name,
-                                        "ques_num": Question.objects.filter(tags__in=h1.get_all_child_headlines().union(
-                                            {h1})).filter(multisectionquestion=None).distinct().count()
-                                    } for h1 in H1.objects.filter(lesson=les)
-                                ],
-                            } for les in Lesson.objects.filter(module=mod)
-                        ],
-                    } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
-                ],
-            },
-        ]
+        {
+            "subject_name": subject,
+            "total_ques_num": Question.objects.filter(
+                tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()
+            ).filter(multisectionquestion=None).distinct().count(),
+            "units": [
+                {
+                    "unit_name": mod.name,
+                    "ques_num": Question.objects.filter(
+                        tags__in=mod.get_all_headlines()
+                    ).filter(multisectionquestion=None).distinct().count(),
+                    "lessons": [
+                        {
+                            "lesson_name": les.name,
+                            "ques_num": Question.objects.filter(
+                                tags__in=les.get_all_headlines()
+                            ).filter(multisectionquestion=None).distinct().count(),
+                            "h1": [
+                                {
+                                    "h1_name": h1.name,
+                                    "ques_num": Question.objects.filter(
+                                        tags__in=h1.get_all_child_headlines().union({h1})
+                                    ).filter(multisectionquestion=None).distinct().count(),
+                                    "h2": [
+                                        {
+                                            "h2_name": h2.name,
+                                            "ques_num": Question.objects.filter(
+                                                tags__in=h2.get_all_child_headlines().union({h2})
+                                            ).filter(multisectionquestion=None).distinct().count(),
+                                            "h3": [
+                                                {
+                                                    "h3_name": h3.name,
+                                                    "ques_num": Question.objects.filter(
+                                                        tags__in=h3.get_all_child_headlines().union({h3})
+                                                    ).filter(multisectionquestion=None).distinct().count(),
+                                                    "h4": [
+                                                        {
+                                                            "h4_name": h4.name,
+                                                            "ques_num": Question.objects.filter(
+                                                                tags__in=h4.get_all_child_headlines().union({h4})
+                                                            ).filter(multisectionquestion=None).distinct().count(),
+                                                            "h5": [
+                                                                {
+                                                                    "h5_name": h5.name,
+                                                                    "ques_num": Question.objects.filter(
+                                                                        tags__in=h5.get_all_child_headlines().union({h5})
+                                                                    ).filter(multisectionquestion=None).distinct().count(),
+                                                                } for h5 in HeadLine.objects.filter(parent_headline=h4)
+                                                            ],
+                                                        } for h4 in HeadLine.objects.filter(parent_headline=h3)
+                                                    ],
+                                                } for h3 in HeadLine.objects.filter(parent_headline=h2)
+                                            ],
+                                        } for h2 in HeadLine.objects.filter(parent_headline=h1)
+                                    ],
+                                } for h1 in H1.objects.filter(lesson=les)
+                            ],
+                        } for les in Lesson.objects.filter(module=mod)
+                    ],
+                } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
+            ],
+        }
+    ]
 
     return render(request, 'subjectStatistics.html', {'data': data})
 
@@ -1560,7 +1633,7 @@ def subjectStatistics(request, subject, grade):
 
 
 @api_view(['POST'])
-def test(request):
+def create_pkg(request):
     pkg_author = 'f1c21507-048e-4c15-9ae0-9c0f0cf5f0e0'
     pkg_author = Author.objects.get(id=pkg_author)
 
@@ -1578,6 +1651,115 @@ def test(request):
         pkg.save()
     return Response()
 
+@api_view(['POST'])
+def test(request):
+    return Response()
+
+@api_view(['POST'])
+def read_headlines(request):
+    df = pd.read_excel(r'F:\kawkab\backend\database\English_2025.xlsx') # TODO
+    sub = Subject.objects.get(name='اللغة الإنجليزية', grade=11) # TODO
+    semester = 1 # TODO
+    
+    mod_order = 1
+    les_order = 1
+    h1_order = 1
+    h2_order = 1
+    h3_order = 1
+    h4_order = 1
+    h5_order = 1
+
+    pre_mod = ''
+    pre_les = ''
+    pre_h1 = ''
+    pre_h2 = ''
+    pre_h3 = ''
+    pre_h4 = ''
+    pre_h5 = ''
+    print('Started')
+    for index, row in df.iterrows():
+        if str(row['module']) == 'nan':
+            continue
+        row = row.to_dict()
+        mod, _ = Module.objects.get_or_create(name=str(row['module']).strip(), subject=sub, semester=semester)
+        if _:
+            print(mod.name)
+            mod.order = mod_order
+            mod.save()
+        if mod.name != pre_mod:
+            pre_mod = mod.name
+            mod_order += 1
+            les_order = 1
+
+        les, _ = Lesson.objects.get_or_create(name=str(row['lesson']).strip(), module=mod)
+        if _:
+            print(les.name)
+            les.order = les_order
+            les.save()
+        if les.name != pre_les:
+            pre_les = les.name
+            les_order += 1
+            h1_order = 1
+
+        if str(row['h1']) != 'nan':
+            h1, _ = H1.objects.get_or_create(name=str(row['h1']).strip(), lesson=les)
+            if _:
+                print(h1.name)
+                h1.order = h1_order
+                h1.save()
+            if h1.name != pre_h1:
+                pre_h1 = h1.name
+                h1_order += 1
+                h2_order = 1
+
+            if str(row['h2']) != 'nan':
+                h2, _ = HeadLine.objects.get_or_create(name=str(row['h2']).strip(), parent_headline=h1)
+                h2.level=2
+                h2.save()
+                if _:
+                    print(h2.name)
+                    h2.order = h2_order
+                    h2.save()
+                if h2.name != pre_h2:
+                    pre_h2 = h2.name
+                    h2_order += 1
+                    h3_order = 1
+                if str(row['h3']) != 'nan':
+                    h3, _ = HeadLine.objects.get_or_create(name=str(row['h3']).strip(), parent_headline=h2)
+                    h3.level=3
+                    h3.save()
+                    if _:
+                        print(h3.name)
+                        h3.order = h3_order
+                        h3.save()
+                    if h3.name != pre_h3:
+                        pre_h3 = h3.name
+                        h3_order += 1
+                        h4_order = 1
+                    if str(row['h4']) != 'nan':
+                        h4, _ = HeadLine.objects.get_or_create(name=str(row['h4']).strip(), parent_headline=h3)
+                        h4.level=4
+                        h4.save()
+                        if _:
+                            print(h4.name)
+                            h4.order = h4_order
+                            h4.save()
+                        if h4.name != pre_h4:
+                            pre_h4 = h4.name
+                            h4_order += 1
+                        if str(row['h5']) != 'nan':
+                            h5, _ = HeadLine.objects.get_or_create(name=str(row['h5']).strip(), parent_headline=h4)
+                            h5.level=5
+                            h5.save()
+                            if _:
+                                print(h5.name)
+                                h5.order = h5_order
+                                h5.save()
+                            if h5.name != pre_h5:
+                                pre_h5 = h5.name
+                                h5_order += 1
+    print('Done')
+    return Response()
 # @api_view(['POST'])
 # def randomize_choice_order(request):
     # import random

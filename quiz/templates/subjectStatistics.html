@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Subjects Information</title>
@@ -11,94 +12,188 @@
             line-height: 1.6;
             background-color: #f2f2f2;
             padding: 20px;
-            direction: rtl; /* Set overall direction to right-to-left */
+            direction: rtl;
         }
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             background-color: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: right;
         }
-        .subject {
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 20px;
+
+        .toggle {
+            cursor: pointer;
+            user-select: none;
         }
+
+        .content {
+            display: none;
+            margin-right: 20px;
+            margin-top: 5px;
+        }
+
+        /* Level colors */
         .subject h2 {
             color: #333;
             font-size: 24px;
-            margin-bottom: 10px;
-            text-align: right;
         }
-        .unit {
-            margin-bottom: 15px;
-            padding-right: 20px;
-            border-right: 2px solid #007bff;
-        }
+
         .unit h3 {
             color: #007bff;
             font-size: 20px;
-            margin-bottom: 5px;
-            text-align: right;
         }
-        .lesson {
-            margin-right: 20px;
-            margin-bottom: 10px;
-            text-align: right;
-        }
+
         .lesson h4 {
             color: #555;
             font-size: 18px;
-            margin-bottom: 5px;
-            text-align: right;
         }
-        .h1 {
-            margin-right: 40px;
-            margin-bottom: 5px;
-            text-align: right;
-        }
+
         .h1 h5 {
-            color: #888;
+            color: #6c757d;
             font-size: 16px;
-            margin-bottom: 3px;
-            text-align: right;
+        }
+
+        .h2 h6 {
+            color: #17a2b8;
+            font-size: 15px;
+        }
+
+        .h3 h6 {
+            color: #28a745;
+            font-size: 14px;
+        }
+
+        .h4 h6 {
+            color: #ffc107;
+            font-size: 13px;
+        }
+
+        .h5 h6 {
+            color: #dc3545;
+            font-size: 12px;
+        }
+
+        /* Toggle icon */
+        .toggle::before {
+            content: "➕ ";
+            font-size: 16px;
+            color: #555;
+        }
+
+        .toggle.open::before {
+            content: "➖ ";
+            color: #555;
+        }
+
+        /* No icon for non-toggle elements */
+        .no-toggle::before {
+            content: "";
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1 style="text-align: center;">عدد الأسئلة</h1>
 
         {% for subject in data %}
         <div class="subject">
-            <h2>{{ subject.subject_name }} : {{ subject.total_ques_num }}</h2>
+            <h2>{{ subject.subject_name }} : {{ subject.total_ques_num }}</h2> <!-- No toggle here -->
 
             {% for unit in subject.units %}
             <div class="unit">
-                <h3>{{ unit.unit_name }} : {{ unit.ques_num }}</h3>
-
-                {% for lesson in unit.lessons %}
-                <div class="lesson">
-                    <h4>{{ lesson.lesson_name }} : {{ lesson.ques_num }}</h4>
-
-                    {% for h1 in lesson.h1 %}
-                    <div class="h1">
-                        <h5>{{ h1.h1_name }} : {{ h1.ques_num }}</h5>
+                {% if unit.lessons %}
+                <h3 class="toggle">{{ unit.unit_name }} : {{ unit.ques_num }}</h3>
+                <div class="content">
+                    {% for lesson in unit.lessons %}
+                    <div class="lesson">
+                        {% if lesson.h1 %}
+                        <h4 class="toggle">{{ lesson.lesson_name }} : {{ lesson.ques_num }}</h4>
+                        <div class="content">
+                            {% for h1 in lesson.h1 %}
+                            <div class="h1">
+                                {% if h1.h2 %}
+                                <h5 class="toggle">{{ h1.h1_name }} : {{ h1.ques_num }}</h5>
+                                <div class="content">
+                                    {% for h2 in h1.h2 %}
+                                    <div class="h2">
+                                        {% if h2.h3 %}
+                                        <h6 class="toggle">{{ h2.h2_name }} : {{ h2.ques_num }}</h6>
+                                        <div class="content">
+                                            {% for h3 in h2.h3 %}
+                                            <div class="h3">
+                                                {% if h3.h4 %}
+                                                <h6 class="toggle">{{ h3.h3_name }} : {{ h3.ques_num }}</h6>
+                                                <div class="content">
+                                                    {% for h4 in h3.h4 %}
+                                                    <div class="h4">
+                                                        {% if h4.h5 %}
+                                                        <h6 class="toggle">{{ h4.h4_name }} : {{ h4.ques_num }}</h6>
+                                                        <div class="content">
+                                                            {% for h5 in h4.h5 %}
+                                                            <div class="h5">
+                                                                <h6 class="no-toggle">{{ h5.h5_name }} : {{ h5.ques_num
+                                                                    }}</h6> <!-- No toggle for final -->
+                                                            </div>
+                                                            {% endfor %}
+                                                        </div>
+                                                        {% else %}
+                                                        <h6 class="no-toggle">{{ h4.h4_name }} : {{ h4.ques_num }}</h6>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                                {% else %}
+                                                <h6 class="no-toggle">{{ h3.h3_name }} : {{ h3.ques_num }}</h6>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                        {% else %}
+                                        <h6 class="no-toggle">{{ h2.h2_name }} : {{ h2.ques_num }}</h6>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <h5 class="no-toggle">{{ h1.h1_name }} : {{ h1.ques_num }}</h5>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <h4 class="no-toggle">{{ lesson.lesson_name }} : {{ lesson.ques_num }}</h4>
+                        {% endif %}
                     </div>
                     {% endfor %}
-
                 </div>
-                {% endfor %}
-
+                {% else %}
+                <h3 class="no-toggle">{{ unit.unit_name }} : {{ unit.ques_num }}</h3>
+                {% endif %}
             </div>
             {% endfor %}
-
         </div>
         {% endfor %}
-
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggles = document.querySelectorAll('.toggle');
+            toggles.forEach(function (toggle) {
+                toggle.addEventListener('click', function () {
+                    const content = this.nextElementSibling;
+                    if (content && content.classList.contains('content')) {
+                        content.style.display = content.style.display === 'block' ? 'none' : 'block';
+                        this.classList.toggle('open');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
+
 </html>

@@ -457,21 +457,21 @@
 # read headlines
 #    import pandas as pd
 #     df = pd.read_excel(r'F:\kawkab\backend\data\histt.xlsx')
-#
+
 #     mod_order = 1
 #     les_order = 1
 #     h1_order = 1
 #     h2_order = 1
 #     h3_order = 1
 #     h4_order = 1
-#
+
 #     pre_mod = ''
 #     pre_les = ''
 #     pre_h1 = ''
 #     pre_h2 = ''
 #     pre_h3 = ''
 #     pre_h4 = ''
-#
+
 #     sub = Subject.objects.get(name='اللغة الإنجليزية', grade=11)
 #     for index, row in df.iterrows():
 #         if str(row['module']) == 'nan':
@@ -485,7 +485,7 @@
 #             pre_mod = mod.name
 #             mod_order += 1
 #             les_order = 1
-#
+
 #         les, _ = Lesson.objects.get_or_create(name=str(row['lesson']).strip(), module=mod)
 #         if _:
 #             les.order = les_order
@@ -494,7 +494,7 @@
 #             pre_les = les.name
 #             les_order += 1
 #             h1_order = 1
-#
+
 #         if str(row['h1']) != 'nan':
 #             h1, _ = H1.objects.get_or_create(name=str(row['h1']).strip(), lesson=les)
 #             if _:
@@ -504,7 +504,7 @@
 #                 pre_h1 = h1.name
 #                 h1_order += 1
 #                 h2_order = 1
-#
+
 #             if str(row['h2']) != 'nan':
 #                 h2, _ = HeadLine.objects.get_or_create(name=str(row['h2']).strip(), parent_headline=h1, level=2)
 #                 if _:
