@@ -1040,20 +1040,20 @@ def share_quiz(request):
     return Response({'subject': {'id': str(quiz.subject.id), 'name': quiz.subject.name}, 'questions': serializer.data,
                      'duration': quiz.duration.total_seconds() if quiz.duration is not None else None})
 
-
 @api_view(['POST'])
 def get_admin_suggestions(request):
     data = request.data
     if _check_admin(data):
-        h1s = H1.objects.all().annotate(level=Value(1, output_field=IntegerField()))
-        headlines = HeadLine.objects.all()
+        h1s = H1.objects.all().annotate(
+            level=Value(1, output_field=IntegerField()),
+            parent=F('lesson__name')
+        ).values('name', 'level', 'parent')
 
-        # Combine into a single queryset
-        combined_queryset = h1s.union(headlines)
+        headlines = HeadLine.objects.all().annotate(
+            parent=F('parent_headline__name')
+        ).values('name', 'level', 'parent')
 
-        # Serialize queryset to list of dictionaries
-        headBases = list(combined_queryset.values('name', 'level'))
-
+        headBases = list(h1s.union(headlines))
         authors = Author.objects.all().values_list('name', flat=True)
         return Response({"headBases": headBases, 'authors': authors})
     else:
@@ -1760,6 +1760,7 @@ def read_headlines(request):
                                 h5_order += 1
     print('Done')
     return Response()
+
 # @api_view(['POST'])
 # def randomize_choice_order(request):
     # import random

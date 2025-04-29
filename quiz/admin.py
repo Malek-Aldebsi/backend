@@ -101,9 +101,9 @@ class UserQuizAdmin(ExportActionMixin, admin.ModelAdmin):
     ordering = ('-creationDate',)
 
     def user_id(self, obj):
-        return f'{obj.user.userUID if obj.user else '...'}'
+        return f'{obj.user.userUID if obj.user else "..."}'
     def user_name(self, obj):
-        return f'{obj.user.firstName if obj.user else '...'}'
+        return f'{obj.user.firstName if obj.user else "..."}'
     def questions_num(self, obj):
         return UserAnswer.objects.filter(quiz=obj).count()
 
