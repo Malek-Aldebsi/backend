@@ -1284,6 +1284,7 @@ def add_or_edit_multi_section_question(request):
                 sub_question.choices.add(choice)
 
         for i in range(len(ques['headlines'])):
+            print(ques['headlines'])
             if ques['headlinesLevel'][i] == 1:
                 headline = H1.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), Lesson__name=ques['headlines'][i].split(' -- ')[1].strip())
             else:
