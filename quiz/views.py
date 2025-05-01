@@ -1132,13 +1132,13 @@ def add_or_edit_multiple_choice_question(request):
     for index, choice in enumerate(choices):
         choice.order = index
         choice.save()
-
+    
     for i in range(len(headlines)):
         if headlines_level[i] == 1:
-            headline = H1.objects.get(name=headlines[i].strip())
+            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), Lesson__name=headlines[i].split(' -- ')[1].strip())
             question.tags.add(headline)
         else:
-            headline = HeadLine.objects.get(name=headlines[i].strip(), level=headlines_level[i])
+            headline = HeadLine.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_headline__name=headlines[i].split(' -- ')[1].strip(), level=headlines_level[i])
             question.tags.add(headline)
 
     author, _ = Author.objects.get_or_create(name=source)
@@ -1204,10 +1204,10 @@ def add_or_edit_final_answer_question(request):
 
     for i in range(len(headlines)):
         if headlines_level[i] == 1:
-            headline = H1.objects.get(name=headlines[i].strip())
+            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), Lesson__name=headlines[i].split(' -- ')[1].strip())
             question.tags.add(headline)
         else:
-            headline = HeadLine.objects.get(name=headlines[i].strip(), level=headlines_level[i])
+            headline = HeadLine.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_headline__name=headlines[i].split(' -- ')[1].strip(), level=headlines_level[i])
             question.tags.add(headline)
 
     author, _ = Author.objects.get_or_create(name=source)
@@ -1285,10 +1285,10 @@ def add_or_edit_multi_section_question(request):
 
         for i in range(len(ques['headlines'])):
             if ques['headlinesLevel'][i] == 1:
-                headline = H1.objects.get(name=ques['headlines'][i].strip())
-
+                headline = H1.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), Lesson__name=ques['headlines'][i].split(' -- ')[1].strip())
             else:
-                headline = HeadLine.objects.get(name=ques['headlines'][i].strip(), level=ques['headlinesLevel'][i])
+                headline = HeadLine.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), parent_headline__name=ques['headlines'][i].split(' -- ')[1].strip(), level=ques['headlinesLevel'][i])
+
             sub_question.tags.add(headline)
             question.tags.add(headline)
 
