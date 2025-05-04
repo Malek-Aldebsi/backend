@@ -18,8 +18,8 @@ class User(models.Model):
     # auth_method = models.IntegerField(choices=auth_choices, null=True, blank=True)
 
     # email = models.EmailField(unique=True, null=True, blank=True)
-    # phone = models.CharField(unique=True, max_length=30, null=True, blank=True)
-    # password = models.TextField(null=True, blank=True)
+    phone = models.CharField(unique=True, max_length=30, null=True, blank=True)
+    password = models.TextField(null=True, blank=True)
     userUID = models.CharField(unique=True, max_length=30, null=True, blank=True)
 
     firstName = models.CharField(max_length=30, null=True, blank=True)
@@ -32,7 +32,7 @@ class User(models.Model):
     listenFrom = models.CharField(max_length=50, null=True, blank=True)
     contact_method = models.CharField(max_length=50, null=True, blank=True)
     admin = models.BooleanField(default=False, blank=True)
-    # anonymous = models.BooleanField(default=False, blank=True)
+    anonymous = models.BooleanField(default=False, blank=True)
 
     def __str__(self):
         return f'{self.firstName} {self.lastName}'
