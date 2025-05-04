@@ -33,7 +33,7 @@ def create_anonymous_account(request):
     except:
         pass
 
-    return Response(userID)
+    return Response({'session_id': userID})
 ######################################################################
 
 def statistics(request):
