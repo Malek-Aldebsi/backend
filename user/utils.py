@@ -62,6 +62,9 @@ def _check_user(data):
     userUID = data.get('userUID', None)
     if userUID is not None:
         return User.objects.filter(userUID=userUID).exists()
+    userID = data.get('id', None)
+    if userID is not None:
+        return User.objects.filter(id=userID).exists()
     return False
 
 
