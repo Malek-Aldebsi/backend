@@ -30,6 +30,9 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
 
 # import re
 
+######################################################################
+
+######################################################################
 
 @api_view(['POST'])
 def dashboard(request):
@@ -1134,7 +1137,6 @@ def add_or_edit_multiple_choice_question(request):
         choice.save()
     
     for i in range(len(headlines)):
-        print(headlines[i])
         if headlines_level[i] == 1:
             headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), lesson__name=headlines[i].split(' -- ')[1].strip())
             question.tags.add(headline)
