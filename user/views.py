@@ -9,11 +9,32 @@ from quiz.models import Subject, UserQuiz
 from school import settings
 from user.models import Quote, Advertisement, User
 from user.serializers import AdvertisementSerializer
-from user.utils import signup, _check_user, _check_admin
+from user.utils import signup, _check_user, _check_admin, signupAsAnonymous
 
 from django.shortcuts import render
 from django.db.models import Count, Max, Avg
 
+
+######################################################################
+@api_view(['POST'])
+def create_anonymous_account(request):
+    userID = signupAsAnonymous()
+    
+    subject = 'New user'
+    message = f'A new user has Signed Up. Number of users is {User.objects.count()} now'
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.EMAIL_HOST_USER,
+            ['malek315@gmail.com', 'osamafitiani2001@gmail.com'],
+            fail_silently=False,
+        )
+    except:
+        pass
+
+    return Response(userID)
+######################################################################
 
 def statistics(request):
     total_users = User.objects.count()

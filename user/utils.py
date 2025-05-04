@@ -21,8 +21,26 @@ def signup(data):
         Account.objects.create(user=user)
 
         return 0
-#
-#
+
+def signupAsAnonymous():
+    user = User.objects.create(
+        firstName='توجيهي',
+        lastName=User.objects.count()+1,
+        phone=None,
+        password=None,
+        grade=None,
+        age=None,
+        school_name=None,
+        listenFrom=None,
+        contact_method=None,
+        admin=False,
+        anonymous=True
+    )
+
+    Account.objects.create(user=user)
+    return user.id
+
+
 # def login(data):
 #     if data['password'] == '698f07e088f3b7f9fa06c182d99a82886126c5c5d993cf4473d03dfad3c3be81':
 #         return 0
