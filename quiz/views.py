@@ -31,7 +31,8 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
 # import re
 
 ######################################################################
-
+# TODO the errors must be handeled in this way return Response({'status': 'unauthorized'}, status=403)
+# see save_question
 ######################################################################
 
 @api_view(['POST'])
@@ -710,35 +711,30 @@ def get_saved_question(request):
     else:
         return Response(0)
 
-
 @api_view(['POST'])
 def save_question(request):
     data = request.data
     question_id = data.pop('question_id', None)
 
-    if _check_user(data):
-        user = get_user(data)
-        question = Question.objects.get(id=question_id)
-        ques, _ = SavedQuestion.objects.get_or_create(user=user, question=question)
-        return Response(1)
-
-    else:
-        return Response(0)
-
-
-@api_view(['POST'])
-def unsave_question(request):
-    data = request.data
-    question_id = data.pop('question_id', None)
+    if not question_id:
+        return Response({'error': 'question_id is required'}, status=400)
 
     if _check_user(data):
         user = get_user(data)
         question = Question.objects.get(id=question_id)
-        SavedQuestion.objects.get(user=user, question=question).delete()
-        return Response(1)
+
+        # Check if already saved
+        existing = SavedQuestion.objects.filter(user=user, question=question).first()
+
+        if existing:
+            existing.delete()
+            return Response({'status': 'unsaved'})
+        else:
+            SavedQuestion.objects.create(user=user, question=question)
+            return Response({'status': 'saved'})
 
     else:
-        return Response(0)
+        return Response({'status': 'unauthorized'}, status=403)
 
 
 @api_view(['POST'])

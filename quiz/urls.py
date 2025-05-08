@@ -6,7 +6,7 @@ from .views import read_headlines, subject_set, headline_set, build_quiz, mark_q
      get_admin_question, subject_question_ids, \
      mark_question, get_shared_question, mark_shared_question, share_quiz, dashboard, get_writing_question, \
      submit_writing_question, add_writing_topic, add_suggested_quiz, suggested_quizzes, take_quiz, edit_user_info, \
-     subject_analysis, test, get_saved_question, saved_questions, report, save_question, unsave_question, \
+     subject_analysis, test, get_saved_question, saved_questions, report, save_question, \
      reset_questions_level_and_ideal_duration, subjectStatistics, get_admin_suggestions
 
 urlpatterns = [
@@ -40,7 +40,6 @@ urlpatterns = [
      path('report/', report),
      path('saved_questions/', saved_questions),
      path('save_question/', save_question),
-     path('unsave_question/', unsave_question),
      path('quiz_history/', quiz_history),
      path('suggested_quizzes/', suggested_quizzes),
      path('take_quiz/', take_quiz),
