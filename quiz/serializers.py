@@ -2,7 +2,7 @@ from datetime import timedelta
 import datetime
 from django.db.models import Sum
 from rest_framework import serializers
-from .models import Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
+from .models import SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
     AdminMultipleChoiceAnswer, H1, UserAnswer, AdminFinalAnswer, UserFinalAnswer, UserMultipleChoiceAnswer, UserQuiz, \
     MultiSectionQuestion, UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz
 
@@ -107,9 +107,11 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
     idealDuration = serializers.SerializerMethodField()
     special_tags = serializers.SerializerMethodField()
+    saved = serializers.SerializerMethodField()
+
     class Meta:
         model = MultipleChoiceQuestion
-        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'choices', 'type', 'special_tags']
+        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'choices', 'type', 'special_tags', 'saved']
 
     def get_special_tags(self, obj):
         return obj.tags.exclude(specialtags=None).values_list('name', flat=True)
@@ -140,6 +142,13 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
 
         formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
         return formatted_duration
+
+    def get_saved(self, obj):
+        user_id = self.context.get('user_id')
+        return SavedQuestion.objects.filter(
+            user__id=user_id,
+            question=obj
+        ).exists()
 
 
 class MultiSectionQuestionSerializer(serializers.ModelSerializer):

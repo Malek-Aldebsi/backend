@@ -33,6 +33,8 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
 ######################################################################
 # TODO the errors must be handeled in this way return Response({'status': 'unauthorized'}, status=403)
 # see save_question
+
+# let the modules and lessons tags
 ######################################################################
 
 @api_view(['POST'])
@@ -210,7 +212,7 @@ def build_quiz(request):
         else:
             return []
 
-    def get_questions(user_packages, lesson_headline, modules_lessons_normalized_weights, phone, quiz_level=[]):
+    def get_questions(user_id, user_packages, lesson_headline, modules_lessons_normalized_weights, phone, quiz_level=[]):
         """
         lesson_headline = {    # here headlines are from all levels 1-5
             'lesson1': {h1, h2, h3},
@@ -244,7 +246,9 @@ def build_quiz(request):
                     if headline_counter > question_num * 10:
                         break
                 question_set |= temp_question_set
-        serializer = QuestionSerializer(question_set, many=True)
+        # serializer = QuestionSerializer(question_set, many=True)
+        serializer = QuestionSerializer(question_set, many=True, context={'user_id': user_id})
+
         return serializer.data
 
     data = request.data
@@ -286,7 +290,7 @@ def build_quiz(request):
 
         # level = quiz_level(quiz_level, question_number)
         user_packages = account.pkg_list.all()
-        questions = get_questions(user_packages, lesson_headline, modules_lessons_normalized_weights, phone)
+        questions = get_questions(user.id, user_packages, lesson_headline, modules_lessons_normalized_weights, phone)
 
         # while recursion_num < 3 and len(questions) < question_number:
         #     print(recursion_num)
