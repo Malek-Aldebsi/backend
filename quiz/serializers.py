@@ -63,10 +63,11 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
     type = serializers.SerializerMethodField()
     idealDuration = serializers.SerializerMethodField()
     special_tags = serializers.SerializerMethodField()
+    saved = serializers.SerializerMethodField()
 
     class Meta:
         model = FinalAnswerQuestion
-        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'type', 'special_tags']
+        fields = ['id', 'body', 'image', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'correct_answer', 'type', 'special_tags', 'saved']
 
     def get_special_tags(self, obj):
         return obj.tags.exclude(specialtags=None).values_list('name', flat=True)
@@ -98,6 +99,14 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
         formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
         return formatted_duration
 
+    def get_saved(self, obj):        
+        user_id = self.context.get('user_id')
+        
+        print(user_id)
+        return SavedQuestion.objects.filter(
+            user__id=user_id,
+            question=obj
+        ).exists()
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     correct_answer = AdminMultipleChoiceAnswerSerializer(many=False)
@@ -143,8 +152,10 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
         formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
         return formatted_duration
 
-    def get_saved(self, obj):
+    def get_saved(self, obj):        
         user_id = self.context.get('user_id')
+        
+        print(user_id)
         return SavedQuestion.objects.filter(
             user__id=user_id,
             question=obj
@@ -156,10 +167,11 @@ class MultiSectionQuestionSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
     idealDuration = serializers.SerializerMethodField()
+    saved = serializers.SerializerMethodField()
 
     class Meta:
         model = MultiSectionQuestion
-        fields = ['id', 'body', 'image', 'author', 'idealDuration', 'hint', 'sub_questions', 'is_extraction_question', 'type']
+        fields = ['id', 'body', 'image', 'author', 'idealDuration', 'hint', 'sub_questions', 'is_extraction_question', 'type', 'saved']
 
     def get_sub_questions(self, obj):
         sub_questions = []
@@ -186,16 +198,25 @@ class MultiSectionQuestionSerializer(serializers.ModelSerializer):
         formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
         return formatted_duration
 
+    def get_saved(self, obj):        
+        user_id = self.context.get('user_id')
+        
+        print(user_id)
+        return SavedQuestion.objects.filter(
+            user__id=user_id,
+            question=obj
+        ).exists()
 
 class WritingQuestionSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     headlines = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
     idealDuration = serializers.SerializerMethodField()
+    saved = serializers.SerializerMethodField()
 
     class Meta:
         model = WritingQuestion
-        fields = ['id', 'body', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'type']
+        fields = ['id', 'body', 'level', 'author', 'headlines', 'idealDuration', 'hint', 'type', 'saved']
 
     def get_type(self, obj):
         return 'writingQuestion'
@@ -218,6 +239,14 @@ class WritingQuestionSerializer(serializers.ModelSerializer):
         formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
         return formatted_duration
 
+    def get_saved(self, obj):        
+        user_id = self.context.get('user_id')
+        
+        print(user_id)
+        return SavedQuestion.objects.filter(
+            user__id=user_id,
+            question=obj
+        ).exists()
 
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -226,13 +255,13 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     def to_representation(self, obj):
         if hasattr(obj, 'finalanswerquestion'):
-            serializer = FinalAnswerQuestionSerializer(obj.finalanswerquestion).data
+            serializer = FinalAnswerQuestionSerializer(obj.finalanswerquestion, context={'user_id': self.context.get('user_id')}).data
         elif hasattr(obj, 'multiplechoicequestion'):
-            serializer = MultipleChoiceQuestionSerializer(obj.multiplechoicequestion).data
+            serializer = MultipleChoiceQuestionSerializer(obj.multiplechoicequestion, context={'user_id': self.context.get('user_id')}).data
         elif hasattr(obj, 'multisectionquestion'):
-            serializer = MultiSectionQuestionSerializer(obj.multisectionquestion).data
+            serializer = MultiSectionQuestionSerializer(obj.multisectionquestion, context={'user_id': self.context.get('user_id')}).data
         elif hasattr(obj, 'writingquestion'):
-            serializer = WritingQuestionSerializer(obj.writingquestion).data
+            serializer = WritingQuestionSerializer(obj.writingquestion, context={'user_id': self.context.get('user_id')}).data
         else:
             serializer = super().to_representation(obj)
         return serializer

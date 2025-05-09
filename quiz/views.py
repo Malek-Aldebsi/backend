@@ -246,7 +246,6 @@ def build_quiz(request):
                     if headline_counter > question_num * 10:
                         break
                 question_set |= temp_question_set
-        # serializer = QuestionSerializer(question_set, many=True)
         serializer = QuestionSerializer(question_set, many=True, context={'user_id': user_id})
 
         return serializer.data
@@ -305,16 +304,17 @@ def build_quiz(request):
 
 @api_view(['POST'])
 def get_writing_question(request):
-    def get_questions(tag):
+    def get_questions(user_id, tag):
         _question = random.choice(Question.objects.filter(tags=tag, sub=True).exclude(writingquestion=None))
-        serializer = QuestionSerializer(_question, many=False)
+        serializer = QuestionSerializer(_question, many=False, context={'user_id': user_id})
         return serializer.data
 
     data = request.data
     tag = data.pop('tag', None)
     if _check_user(data):
+        user = get_user(data)
         h1 = H1.objects.get(name=tag)
-        question = get_questions(h1)
+        question = get_questions(user.id, h1)
         return Response(question)
     else:
         return Response(0)
@@ -449,9 +449,10 @@ def retake_quiz(request):
     quiz_id = data.pop('quiz_id', None)
 
     if _check_user(data):
+        user = get_user(data)
         quiz = UserQuiz.objects.get(id=quiz_id)
         question_set = Question.objects.filter(useranswer__quiz=quiz)
-        serializer = QuestionSerializer(question_set, many=True)
+        serializer = QuestionSerializer(question_set, many=True, context={'user_id': user.id})
         return Response(serializer.data)
     else:
         return Response(0)
@@ -564,7 +565,7 @@ def similar_questions(request):
     if len(questions) > 10:
         questions = questions[:10]
 
-    serializer = QuestionSerializer(questions, many=True)
+    serializer = QuestionSerializer(questions, many=True) # TODO add the user id to get saved field
     if is_single_question:
         tag = questions[0].tags.exclude(headbase=None).first().headbase
         while hasattr(tag, 'headline'):
@@ -709,9 +710,8 @@ def get_saved_question(request):
     question_obj = Question.objects.filter(id=question_id)
 
     if question_obj.exists():
-        serializer = QuestionSerializer(question_obj.first(), many=False).data
+        serializer = QuestionSerializer(question_obj.first(), many=False).data # TODO add the user id to get saved field
         return Response({'question': serializer})
-
     else:
         return Response(0)
 
@@ -982,8 +982,9 @@ def take_quiz(request):
     quiz_id = data.pop('quiz_id', None)
 
     if _check_user(data):
+        user = get_user(data)
         quiz = AdminQuiz.objects.get(id=quiz_id)
-        serializer = QuestionSerializer(quiz.questions.all(), many=True)
+        serializer = QuestionSerializer(quiz.questions.all(), many=True, context={'user_id': user.id})
         return Response(serializer.data)
     else:
         return Response(0)
@@ -1003,7 +1004,7 @@ def get_shared_question(request):
         subject_id = str(tag.h1.lesson.module.subject.id)
         subject_name = str(tag.h1.lesson.module.subject.name)
 
-        serializer = QuestionSerializer(question_obj.first(), many=False).data
+        serializer = QuestionSerializer(question_obj.first(), many=False).data # TODO add the user id to get saved field
         return Response({'question': serializer, 'subject': {'id': subject_id, 'name':subject_name}})
 
     else:
@@ -1039,7 +1040,7 @@ def share_quiz(request):
 
     quiz = UserQuiz.objects.get(id=quiz_id)
     question_set = Question.objects.filter(useranswer__quiz=quiz)
-    serializer = QuestionSerializer(question_set, many=True)
+    serializer = QuestionSerializer(question_set, many=True) # TODO add the user id to get saved field
     return Response({'subject': {'id': str(quiz.subject.id), 'name': quiz.subject.name}, 'questions': serializer.data,
                      'duration': quiz.duration.total_seconds() if quiz.duration is not None else None})
 
@@ -1070,7 +1071,7 @@ def get_admin_question(request):
     question_id = data.pop('ID', None)
 
     question_obj = Question.objects.get(id=question_id)
-    serializer = QuestionSerializer(question_obj, many=False).data
+    serializer = QuestionSerializer(question_obj, many=False).data # TODO add the user id to get saved field
 
     return Response(serializer)
 
