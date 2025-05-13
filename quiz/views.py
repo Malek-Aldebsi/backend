@@ -208,21 +208,31 @@ def build_quiz(request):
     def calculate_h1_weights(normalized_lessons, selected_h1s):
         h1_weights = defaultdict(float)
         
+        # First create a mapping of lesson IDs to their question counts
+        lesson_question_counts = {}
         for module_data in normalized_lessons.values():
-            for lesson_id, q_count in module_data['lessons'].items():
-                try:
-                    lesson = Lesson.objects.get(id=lesson_id)
-                    lesson_h1s = lesson.h1.filter(id__in=selected_h1s)
-                    num_h1s = lesson_h1s.count()
-                    if num_h1s == 0:
-                        continue
-                    per_h1_weight = q_count / num_h1s
-                    for h1 in lesson_h1s:
-                        h1_weights[h1.id] += per_h1_weight
-                except Lesson.DoesNotExist:
-                    continue
-
-        total_weight = sum(h1_weights.values())
+            lesson_question_counts.update(module_data['lessons'])
+        
+        # Create a dictionary to count how many selected H1s exist per lesson
+        h1s_per_lesson = defaultdict(int)
+        for h1 in selected_h1s:
+            if h1.lesson_id:  # Only consider H1s that have a lesson assigned
+                h1s_per_lesson[h1.lesson_id] += 1
+        
+        # Now distribute weights
+        for h1 in selected_h1s:
+            if not h1.lesson_id:
+                continue  # Skip H1s without lessons
+                
+            lesson_id = h1.lesson_id
+            total_questions = lesson_question_counts.get(str(lesson_id), 0)
+            
+            if total_questions > 0 and h1s_per_lesson[lesson_id] > 0:
+                # Distribute lesson's questions equally among its H1s
+                h1_weights[h1.id] = total_questions / h1s_per_lesson[lesson_id]
+        
+        # Normalize to percentages
+        total_weight = sum(h1_weights.values()) or 1  # Prevent division by zero
         return {
             h1_id: (weight / total_weight) * 100
             for h1_id, weight in h1_weights.items()
