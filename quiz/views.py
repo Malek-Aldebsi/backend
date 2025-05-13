@@ -295,7 +295,7 @@ def build_quiz(request):
         )
 
         # Build base query
-        query = Q(tags__in=all_child_headlines) & Q(sub=False) & Q(packages__in=packages)
+        query = Q(tags__in=all_child_headlines) & Q(sub=False) #& Q(packages__in=packages)
         if is_mobile:
             query &= Q(multiplechoicequestion__isnull=False)
 
