@@ -210,3 +210,51 @@ def questions_statistics_statement(attempt_duration, ideal_duration, solved_ques
         statements.append(f'تدرب اكثر على موضوع {time_based_h1s[0][0]} فقد استغرقت وقتا طويلا في حل اسئلته')
 
     return statements if len(statements) < 4 else random.sample(statements, 3)
+
+
+# import itertools
+        # from django.db.models import Avg
+        # from quiz.models import H1, Question
+        # from django.db.models import Case, When, Value, FloatField, F
+        # from django.db.models.functions import Random
+
+        # h1s = ['e6c061cb-3e28-429f-99d3-6da9e222f738', 'a2957db0-adb1-40fa-ad89-7b6cc0a2f953', '75398abe-b01f-42d2-8505-2545fbbc5b9e']
+        # weights = [0.3, 0.3, 0.3]
+        # manual_weights = {}
+
+        # for h1, w in zip(h1s, weights):
+        #     manual_weights[tuple(H1.objects.get(id=h1).get_all_child_headlines())] = w
+
+        # tag_question_counts = []
+        # for index, key in enumerate(list(manual_weights.keys())):
+        #     tag_question_counts.append({'tags__id':h1s[index], 'count': Question.objects.filter(tags__in=key).count()})
+
+        # # Build a dictionary {tag_name: question_count}
+        # tag_counts_dict = {row['tags__id']: row['count'] for row in tag_question_counts}
+
+        # adjusted_weights = {
+        #     tag: manual_weights[tag] / tag_counts_dict.get(tag, 1)  # Avoid division by zero
+        #     for tag in manual_weights
+        # }
+        # from django.db.models import Case, When, Value, FloatField, Max
+        # from django.db.models.functions import Random
+
+        # # Build dynamic case statements using adjusted weights
+        # weight_cases = [
+        #     When(tags__in=tag, then=Value(weight))
+        #     for tag, weight in adjusted_weights.items()
+        # ]
+
+        # # Fallback for tags not in your mapping
+        # weight_case = Case(
+        #     *weight_cases,
+        #     default=Value(0.01),
+        #     output_field=FloatField()
+        # )
+
+        # # Annotate each Question with the max adjusted weight among its tags
+        # questions = Question.objects.filter(tags__in=list(itertools.chain.from_iterable(list(manual_weights.keys())))).annotate(
+        #     tag_weight=Max(weight_case)
+        # ).annotate(
+        #     score=Random() / F('tag_weight')
+        # ).order_by('score')[:10]
