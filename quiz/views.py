@@ -29,6 +29,12 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
     review_final_answer_question, review_multi_choice_question, review_multi_section_question, \
     questions_statistics_statement
 
+import itertools
+from django.db.models import Case, When, Value, FloatField, F, Max
+from django.db.models.functions import Random
+from django.db.models import Case, When, Value, FloatField, Max
+from django.db.models.functions import Random
+
 # import re
 
 ######################################################################
@@ -128,20 +134,32 @@ def headline_set(request):
 
 @api_view(['POST'])
 def build_quiz(request):
+    # {
+    #   "userUID": "clh45NA8l1gmYuLlAQxWanvzPho2",
+    #   "headlines": [
+    #     "44b5b87b-2e90-49ee-b264-e8e176caa811",
+    #     "0d133eeb-f3bf-4a76-a21b-db53eca060c9",
+    #     "7e229267-724c-48d2-94e6-391c2ca7c6de",
+    #     "5e91fcb7-bad9-4fef-b962-56fe2e6bb98d",
+    #     "0dd94440-3783-4b87-8e6b-6cd86acd2034",
+    #     "6eab5f63-18d5-49d7-804f-54c290fcf8a8"
+    #   ],
+    #   "question_num": 20,
+    #   "quiz_level": 0
+    # }
     def calculate_module_weights(selected_h1s):
         modules = Module.objects.annotate(
             total_h1s=Count('lesson__h1', distinct=True),
             common_h1s=Count('lesson__h1', filter=Q(lesson__h1__in=selected_h1s), distinct=True)
-        ).filter(total_h1s__gt=0)
+        ).filter(common_h1s__gt=0)
 
         weights = {}
         for module in modules:
-            if module.common_h1s  > 0:
-                weights[module.id] = module.common_h1s  / module.total_h1s
+            weights[module.id] = module.common_h1s  / module.total_h1s
 
         total_weight  = sum(weights.values())
         return {
-            module_id: round(weight / total_weight) * 100
+            str(module_id): weight / total_weight * 100
             for module_id, weight in weights.items()
             }
 
@@ -149,11 +167,11 @@ def build_quiz(request):
         lessons = Lesson.objects.annotate(
             total_h1s=Count('h1', distinct=True),
             common_h1s=Count('h1', filter=Q(h1__in=selected_h1s), distinct=True)
-        ).filter(total_h1s__gt=0)
+        ).filter(common_h1s__gt=0)
 
         return {
             str(lesson.id): lesson.common_h1s / lesson.total_h1s
-            for lesson in lessons if lesson.common_h1s > 0
+            for lesson in lessons
         }
 
     def lesson_module(module_weights, lesson_weights):
@@ -168,7 +186,7 @@ def build_quiz(request):
         ).select_related('module')
         
         for lesson in lessons:
-            module_id = lesson.module.id
+            module_id = str(lesson.module.id)
             if module_id in module_weights:
                 modules_lessons[module_id]['lessons'][str(lesson.id)] = lesson_weights[str(lesson.id)]
                 modules_lessons[module_id]['total_weight'] = module_weights[module_id]
@@ -209,10 +227,10 @@ def build_quiz(request):
         h1_weights = defaultdict(float)
         
         # First create a mapping of lesson IDs to their question counts
-        lesson_question_counts = {}
+        lesson_question_weights = {}
         for module_data in normalized_lessons.values():
-            lesson_question_counts.update(module_data['lessons'])
-        
+            lesson_question_weights.update(module_data['lessons'])
+
         # Create a dictionary to count how many selected H1s exist per lesson
         h1s_per_lesson = defaultdict(int)
         for h1 in selected_h1s:
@@ -225,90 +243,74 @@ def build_quiz(request):
                 continue  # Skip H1s without lessons
                 
             lesson_id = h1.lesson_id
-            total_questions = lesson_question_counts.get(str(lesson_id), 0)
+            lesson_questions_weight = lesson_question_weights.get(str(lesson_id), 0)
             
-            if total_questions > 0 and h1s_per_lesson[lesson_id] > 0:
+            if lesson_questions_weight > 0 and h1s_per_lesson[lesson_id] > 0:
                 # Distribute lesson's questions equally among its H1s
-                h1_weights[h1.id] = total_questions / h1s_per_lesson[lesson_id]
+                h1_weights[h1.id] = lesson_questions_weight / h1s_per_lesson[lesson_id]
         
         # Normalize to percentages
         total_weight = sum(h1_weights.values()) or 1  # Prevent division by zero
         return {
-            h1_id: (weight / total_weight) * 100
+            str(h1_id): (weight / total_weight) * 100
             for h1_id, weight in h1_weights.items()
-        }
-##########################################
-    def generate_difficulty_level(level, num_questions):
-            """Create difficulty distribution for questions"""
-            if level == 1:  # Easy
-                return [1] * num_questions
-            elif level == 3:  # Hard
-                return [3] * num_questions
-                
-            # Medium (default) - 1:2:1 ratio
-            base = [2] * num_questions
-            quarter = max(1, num_questions // 4)
-            base[:quarter] = [1]*quarter
-            base[-quarter:] = [3]*quarter
-            random.shuffle(base)
-            return base
-##########################################    
-    def fetch_questions(user, packages, h1_weights, question_num, is_mobile):
-        import itertools
-        from django.db.models import Case, When, Value, FloatField, F, Max
-        from django.db.models.functions import Random
+        }    
 
+    def fetch_questions(user, packages, h1_weights, question_num, is_mobile):
         manual_weights = {}
         for h1_id, weight in h1_weights.items():
             try:
                 h1 = H1.objects.get(id=h1_id)
-                child_headlines = h1.get_all_child_headlines()
+                child_headlines = {h1} | h1.get_all_child_headlines()
                 manual_weights[tuple(child_headlines)] = weight / 100
             except H1.DoesNotExist:
                 continue
 
-        tag_question_counts = []
         all_child_headlines = list(itertools.chain(*manual_weights.keys()))
-        
         # Get counts for all tags at once
         count_query = Question.objects.filter(tags__in=all_child_headlines)\
             .values('tags')\
             .annotate(count=Count('id'))
-        tag_counts = {item['tags']: item['count'] for item in count_query}
-
-        # Build adjusted weights
-        adjusted_weights = {}
-        for child_headlines, weight in manual_weights.items():
-            total = sum(tag_counts.get(tag.id, 1) for tag in child_headlines) or 1
-            adjusted_weights[child_headlines] = weight / total
-
-        # Build weight cases
+        tag_counts_dict = {item['tags']: item['count'] for item in count_query}
+        # the previous is equivelant for the following
+        # tag_question_counts = []
+        # for index, key in enumerate(list(manual_weights.keys())):
+        #     tag_question_counts.append({'tags__id':list(h1_weights.keys())[index], 'count': Question.objects.filter(tags__in=key).count()})
+       
+        adjusted_weights = {
+            tag: manual_weights[tag] / tag_counts_dict.get(tag, 1)  # Avoid division by zero
+            for tag in manual_weights
+        }
+        
+        # Build dynamic case statements using adjusted weights
         weight_cases = [
-            When(tags__in=child_headlines, then=Value(weight))
-            for child_headlines, weight in adjusted_weights.items()
+            When(tags__in=tag, then=Value(weight))
+            for tag, weight in adjusted_weights.items()
         ]
 
+        # Fallback for tags not in your mapping
         weight_case = Case(
             *weight_cases,
-            default=Value(0.001),
+            default=Value(0.01),
             output_field=FloatField()
         )
 
         # Build base query
-        query = Q(tags__in=all_child_headlines) & Q(sub=False) #& Q(packages__in=packages)
+        query = Q(tags__in=list(itertools.chain.from_iterable(list(manual_weights.keys())))) & Q(sub=False) #& Q(packages__in=packages) & Q(level__gt=level) & Q(level__lt=level) same for author
         if is_mobile:
             query &= Q(multiplechoicequestion__isnull=False)
 
-        # Execute optimized query
-        questions = Question.objects.filter(query)\
-            .annotate(max_weight=Max(weight_case))\
-            .annotate(score=Random() / (F('max_weight') + 0.001))\
-            .order_by('score')[:question_num]
+        # Annotate each Question with the max adjusted weight among its tags
+        questions = Question.objects.filter(query).annotate(
+            tag_weight=Max(weight_case)
+        ).annotate(
+            score=Random() / F('tag_weight')
+        ).order_by('score')[:question_num]
 
         return QuestionSerializer(questions, many=True, context={'user_id': user.id}).data
   
     data = request.data
-
+    
     h1_ids = data.pop('headlines', None)
     question_num = data.pop('question_num', None)
     quiz_level = data.pop('quiz_level', None)
@@ -347,12 +349,6 @@ def build_quiz(request):
             question_num=question_num,
             is_mobile=phone
         )
-        # while recursion_num < 3 and len(questions) < question_number:
-        #     print(recursion_num)
-        #     questions += get_questions(lesson_headline, modules_lessons_normalized_weights)[:question_number - len(questions)]
-        #     questions = list(set(questions))
-        #     recursion_num += 1
-        # print(len(questions))
         return Response(questions)
     else:
         return Response(0)

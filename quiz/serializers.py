@@ -102,7 +102,6 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
     def get_saved(self, obj):        
         user_id = self.context.get('user_id')
         
-        print(user_id)
         return SavedQuestion.objects.filter(
             user__id=user_id,
             question=obj
@@ -155,7 +154,6 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     def get_saved(self, obj):        
         user_id = self.context.get('user_id')
         
-        print(user_id)
         return SavedQuestion.objects.filter(
             user__id=user_id,
             question=obj
@@ -201,7 +199,6 @@ class MultiSectionQuestionSerializer(serializers.ModelSerializer):
     def get_saved(self, obj):        
         user_id = self.context.get('user_id')
         
-        print(user_id)
         return SavedQuestion.objects.filter(
             user__id=user_id,
             question=obj
@@ -242,7 +239,6 @@ class WritingQuestionSerializer(serializers.ModelSerializer):
     def get_saved(self, obj):        
         user_id = self.context.get('user_id')
         
-        print(user_id)
         return SavedQuestion.objects.filter(
             user__id=user_id,
             question=obj
