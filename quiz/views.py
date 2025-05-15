@@ -450,8 +450,8 @@ def mark_quiz(request):
                         key=lambda x: (x[1]['correct'] + x[1]['all'], x[1]['correct']), reverse=True)
         best_worst_skills = dict(list(skills[:3]) + list(skills[-2:]))
 
-        ideal_duration = "{}".format(str(datetime.timedelta(seconds=round(ideal_duration))))
-        attempt_duration = "{}".format(str(datetime.timedelta(seconds=round(attempt_duration))))
+        ideal_duration = round(ideal_duration)
+        attempt_duration = round(attempt_duration)
         quiz.save()
         return Response({'total_question_num': len(answers) + question_num, 'correct_questions': correct_questions,
                          'ideal_duration': ideal_duration, 'attempt_duration': attempt_duration,
