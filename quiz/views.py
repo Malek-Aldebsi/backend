@@ -762,12 +762,14 @@ def saved_questions(request):
 def get_saved_question(request):
     data = request.data
 
-    question_id = data.pop('id', None)
-    question_obj = Question.objects.filter(id=question_id)
+    question_id = data.pop('question_id', None)
+    if _check_user(data):
+        user = get_user(data)
+        question_obj = Question.objects.filter(id=question_id)
 
-    if question_obj.exists():
-        serializer = QuestionSerializer(question_obj.first(), many=False).data # TODO add the user id to get saved field
-        return Response({'question': serializer})
+        if question_obj.exists():
+            serializer = QuestionSerializer(question_obj.first(), many=False, context={'user_id': user.id}).data
+            return Response({'question': serializer})
     else:
         return Response(0)
 
