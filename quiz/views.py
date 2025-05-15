@@ -762,7 +762,7 @@ def saved_questions(request):
 def get_saved_question(request):
     data = request.data
 
-    question_id = data.pop('ID', None)
+    question_id = data.pop('id', None)
     question_obj = Question.objects.filter(id=question_id)
 
     if question_obj.exists():
@@ -1050,7 +1050,7 @@ def take_quiz(request):
 def get_shared_question(request):
     data = request.data
 
-    question_id = data.pop('ID', None)
+    question_id = data.pop('id', None)
     question_obj = Question.objects.filter(id=question_id)
 
     if question_obj.exists():
