@@ -831,10 +831,10 @@ def report(request):
 @api_view(['POST'])
 def quiz_history(request):
     data = request.data
-    quiz_index = data.pop('quiz_index', 0)
-    search = data.pop('search', None)
-    subject_filter = data.pop('subject_filter', None)
-    sorting = data.pop('sorting', '-')  # '' from older, '-' from newer
+    # quiz_index = data.pop('quiz_index', 0)
+    # search = data.pop('search', None)
+    # subject_filter = data.pop('subject_filter', None)
+    # sorting = data.pop('sorting', '-')  # '' from older, '-' from newer
 
     if _check_user(data):
         user = get_user(data)
@@ -842,23 +842,23 @@ def quiz_history(request):
                 'Thursday': 'الخميس', 'Friday': 'الجمعة', 'Saturday': 'السبت'}
 
         quizzes = UserQuiz.objects.filter(user=user)
-        if search is not None:
-            quizzes = quizzes.filter(Q(subject__name__icontains=search) |
-                                     Q(creationDate__date__icontains=search) |
-                                     Q(useranswer__question__tags__headbase__name__icontains=search) |
-                                     Q(useranswer__question__tags__headbase__h1__lesson__name__icontains=search) |
-                                     Q(useranswer__question__tags__headbase__h1__lesson__module__name__icontains=search)
-                                     )
-        if subject_filter is not None:
-            quizzes = quizzes.filter(subject__name=subject_filter)
+        # if search is not None:
+        #     quizzes = quizzes.filter(Q(subject__name__icontains=search) |
+        #                              Q(creationDate__date__icontains=search) |
+        #                              Q(useranswer__question__tags__headbase__name__icontains=search) |
+        #                              Q(useranswer__question__tags__headbase__h1__lesson__name__icontains=search) |
+        #                              Q(useranswer__question__tags__headbase__h1__lesson__module__name__icontains=search)
+        #                              )
+        # if subject_filter is not None:
+        #     quizzes = quizzes.filter(subject__name=subject_filter)
 
-        filtered_quizzes = quizzes.order_by(f'{sorting}creationDate')[quiz_index:quiz_index + 10]
+        # filtered_quizzes = quizzes.order_by(f'{sorting}creationDate')[quiz_index:quiz_index + 10]
 
-        if not filtered_quizzes.exists():
+        if not quizzes.exists():
             return Response([])
 
         quiz_list = []
-        for quiz in filtered_quizzes:
+        for quiz in quizzes:
             try:
                 date = f'{days[quiz.creationDate.strftime('%A')]} • {quiz.creationDate.strftime('%d/%m/%Y')} • {quiz.creationDate.strftime('%I:%M%p')}'
 
