@@ -838,7 +838,6 @@ def quiz_history(request):
 
     if _check_user(data):
         user = get_user(data)
-
         days = {'Sunday': 'الأحد', 'Monday': 'الإثنين', 'Tuesday': 'الثلاثاء', 'Wednesday': 'الأربعاء',
                 'Thursday': 'الخميس', 'Friday': 'الجمعة', 'Saturday': 'السبت'}
 
@@ -861,8 +860,7 @@ def quiz_history(request):
         quiz_list = []
         for quiz in filtered_quizzes:
             try:
-                date = quiz.creationDate.strftime('%I:%M %p • %d/%m/%Y • %A')
-                date = date[:24] + days[date[24:]]
+                date = f'{days[quiz.creationDate.strftime('%A')]} • {quiz.creationDate.strftime('%d/%m/%Y')} • {quiz.creationDate.strftime('%I:%M%p')}'
 
                 attempt_duration = quiz.useranswer_set.aggregate(Sum('duration'))['duration__sum']
                 attempt_duration = attempt_duration.total_seconds() if attempt_duration else 0
