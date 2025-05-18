@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
 
 from school import settings
-from user.models import Account
-from user.serializers import UserSerializer
+from user.models import Account, Advertisement
+from user.serializers import AdvertisementSerializer, UserSerializer
 from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
@@ -74,9 +74,17 @@ def dashboard(request):
             answers = UserAnswer.objects.filter(quiz__in=user_quizzes).filter(Q(userfinalanswer__body__isnull=False) | Q(usermultiplechoiceanswer__choice__isnull=False)).distinct().count()
             user_answers_by_day[i] = answers
 
+
+        advertisements = Advertisement.objects.filter(active=True).order_by('creationDate')
+        advertisements_serializer = AdvertisementSerializer(advertisements, many=True)
+        
+        # advertisements = []
+        # for advertisement in _advertisements:
+        #     advertisements.append(advertisement.image.url)
+
         return Response({'user_info': user_serializer, 'num_of_user_quizzes': num_of_user_quizzes,
                          'num_of_user_answers': num_of_user_answers, 'total_duration': total_duration_hours,
-                         'user_answers_by_day': user_answers_by_day})
+                         'user_answers_by_day': user_answers_by_day, 'ads': advertisements_serializer.data})
     else:
         return Response(0)
 
