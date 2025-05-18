@@ -7,8 +7,8 @@ from rest_framework.response import Response
 
 from quiz.models import Subject, UserQuiz
 from school import settings
-from user.models import Quote, Advertisement, User
-from user.serializers import AdvertisementSerializer
+from user.models import Quote, Ad, User
+from user.serializers import AdSerializer
 from user.utils import signup, _check_user, _check_admin, signupAsAnonymous
 
 from django.shortcuts import render
@@ -173,13 +173,13 @@ def check_admin(request):
 #
 #         quote = Quote.objects.order_by('creationDate').first().image.url
 #
-#         _advertisements = Advertisement.objects.filter(active=True)
-#         advertisements_serializer = AdvertisementSerializer(_advertisements, many=True)
+#         _ads = Ad.objects.filter(active=True)
+#         ads_serializer = AdSerializer(_ads, many=True)
 #
-#         # _advertisements = Advertisement.objects.order_by('creationDate').filter(active=True)
-#         # advertisements = []
-#         # for advertisement in _advertisements:
-#         #     advertisements.append(advertisement.image.url)
+#         # _ads = Ad.objects.order_by('creationDate').filter(active=True)
+#         # ads = []
+#         # for ad in _ads:
+#         #     ads.append(ad.image.url)
 #
 #         today_date = date.today()
 #         formated_date = today_date.strftime("%d-%m-%Y")
@@ -188,7 +188,7 @@ def check_admin(request):
 #         task_serializer = DailyTaskSerializer(tasks, many=True)
 #
 #         subjects = Subject.objects.filter(grade=user.grade).values('id', 'name')
-#         return Response({'user_name': user.firstName, 'quote': quote, 'advertisements': advertisements_serializer.data,
+#         return Response({'user_name': user.firstName, 'quote': quote, 'ads': ads_serializer.data,
 #                          'today_date': formated_date, 'tasks': task_serializer.data, 'subjects': subjects})
 #     else:
 #         return Response(0)

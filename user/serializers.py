@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from user.models import User, Advertisement
+from user.models import User, Ad
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AdvertisementSerializer(serializers.ModelSerializer):
+class AdSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Advertisement
+        model = Ad
         fields = ['name', 'image']

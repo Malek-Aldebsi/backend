@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
 
 from school import settings
-from user.models import Account, Advertisement
-from user.serializers import AdvertisementSerializer, UserSerializer
+from user.models import Account, Ad
+from user.serializers import AdSerializer, UserSerializer
 from user.utils import _check_user, get_user, _check_admin
 from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
@@ -75,16 +75,12 @@ def dashboard(request):
             user_answers_by_day[i] = answers
 
 
-        advertisements = Advertisement.objects.filter(active=True).order_by('creationDate')
-        advertisements_serializer = AdvertisementSerializer(advertisements, many=True)
-        
-        # advertisements = []
-        # for advertisement in _advertisements:
-        #     advertisements.append(advertisement.image.url)
+        ads = Ad.objects.filter(active=True).order_by('creationDate')
+        ads_serializer = AdSerializer(ads, many=True)
 
         return Response({'user_info': user_serializer, 'num_of_user_quizzes': num_of_user_quizzes,
                          'num_of_user_answers': num_of_user_answers, 'total_duration': total_duration_hours,
-                         'user_answers_by_day': user_answers_by_day, 'ads': advertisements_serializer.data})
+                         'user_answers_by_day': user_answers_by_day, 'ads': ads_serializer.data})
     else:
         return Response(0)
 
@@ -868,7 +864,7 @@ def quiz_history(request):
         quiz_list = []
         for quiz in quizzes:
             try:
-                date = f'{days[quiz.creationDate.strftime('%A')]} • {quiz.creationDate.strftime('%d/%m/%Y')} • {quiz.creationDate.strftime('%I:%M%p')}'
+                date = f"{days[quiz.creationDate.strftime('%A')]} • {quiz.creationDate.strftime('%d/%m/%Y')} • {quiz.creationDate.strftime('%I:%M%p')}"
 
                 attempt_duration = quiz.useranswer_set.aggregate(Sum('duration'))['duration__sum']
                 attempt_duration = attempt_duration.total_seconds() if attempt_duration else 0

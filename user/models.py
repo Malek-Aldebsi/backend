@@ -68,7 +68,7 @@ class Quote(models.Model):
         return f'{self.creationDate}'
 
 
-class Advertisement(models.Model):
+class Ad(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(storage=MediaRootS3Boto3Storage(), null=True, blank=True)
     active = models.BooleanField(default=False, null=True)
