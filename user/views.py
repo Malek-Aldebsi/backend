@@ -5,7 +5,7 @@ from django.db.models.functions import Trunc
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from quiz.models import Subject, UserQuiz
+from quiz.models import FakeSubject, UserQuiz
 from school import settings
 from user.models import Quote, Ad, User
 from user.serializers import AdSerializer
@@ -187,7 +187,7 @@ def check_admin(request):
 #         tasks = DailyTask.objects.filter(user=user, date=today_date)
 #         task_serializer = DailyTaskSerializer(tasks, many=True)
 #
-#         subjects = Subject.objects.filter(grade=user.grade).values('id', 'name')
+#         subjects = FakeSubject.objects.filter(grade=user.grade).values('id', 'name')
 #         return Response({'user_name': user.firstName, 'quote': quote, 'ads': ads_serializer.data,
 #                          'today_date': formated_date, 'tasks': task_serializer.data, 'subjects': subjects})
 #     else:
@@ -202,7 +202,7 @@ def check_admin(request):
 #
 #     if check_user(data):
 #         user = get_user(data)
-#         subject = Subject.objects.get(id=subject_id)
+#         subject = FakeSubject.objects.get(id=subject_id)
 #         today_date = date.today()
 #
 #         for task in tasks:

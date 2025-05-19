@@ -12,12 +12,12 @@ from school import settings
 from user.models import Account, Ad, User
 from user.serializers import AdSerializer, UserSerializer
 from user.utils import _check_user, get_user, _check_admin
-from .models import ReelInteraction, ReelQuestion, Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
+from .models import FaLesson, FaModule, FaModule, ReelInteraction, ReelQuestion, FakeSubject, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
     UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
     UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, \
     SpecialTags, Packages
-from .serializers import ModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
+from .serializers import FaModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
 from django.shortcuts import render
 
 from django.db.models import Count, Q, Sum
@@ -117,7 +117,7 @@ def subject_set(request):
 
     if _check_user(data):
         user = get_user(data)
-        subjects = Subject.objects.filter(grade=user.grade).values('id', 'name')
+        subjects = FakeSubject.objects.filter(grade=user.grade).values('id', 'name')
         return Response(subjects)
 
     else:
@@ -130,11 +130,11 @@ def headline_set(request):
     subject_id = data.pop('subject_id', None)
 
     if _check_user(data):
-        subject = Subject.objects.get(id=subject_id)
+        subject = FakeSubject.objects.get(id=subject_id)
         headlines = subject.get_main_headlines().values('id', 'name')
 
-        modules = Module.objects.filter(subject=subject)
-        module_serializer = ModuleSerializer(modules, many=True).data
+        modules = FaModule.objects.filter(subject=subject)
+        module_serializer = FaModuleSerializer(modules, many=True).data
         return Response({'modules': module_serializer, 'headlines': headlines})
     else:
         return Response(0)
@@ -156,7 +156,7 @@ def build_quiz(request):
     #   "quiz_level": 0
     # }
     def calculate_module_weights(selected_h1s):
-        modules = Module.objects.annotate(
+        modules = FaModule.objects.annotate(
             total_h1s=Count('lesson__h1', distinct=True),
             common_h1s=Count('lesson__h1', filter=Q(lesson__h1__in=selected_h1s), distinct=True)
         ).filter(common_h1s__gt=0)
@@ -391,7 +391,7 @@ def get_reels(request):
         decay_days = 60 # after this number we suggest the reel not seen by the user even if he see it before    
         question_num = 20        
         
-        subject = Subject.objects.filter(id=subject_id)
+        subject = FakeSubject.objects.filter(id=subject_id)
         tag_ids = [headline.id for headline in subject.get_all_headlines(semester)]
 
         # Sample n ReelQuestion objects with any of tag_ids where sampling probability ∝ time since last view.    
@@ -553,7 +553,7 @@ def mark_quiz(request):
         lessons = {}
         h1s = {}
 
-        subject = Subject.objects.get(id=subject)
+        subject = FakeSubject.objects.get(id=subject)
         quiz = UserQuiz.objects.create(subject=subject, user=user,
                                        duration=datetime.timedelta(
                                            seconds=int(quiz_duration)) if quiz_duration is not None else None)
@@ -1084,11 +1084,11 @@ def subject_analysis(request):
     if _check_user(data):
         user = get_user(data)
 
-        subject = Subject.objects.get(id=subject)
+        subject = FakeSubject.objects.get(id=subject)
         headlines = subject.get_main_headlines().values('id', 'name')
 
-        modules = Module.objects.filter(subject=subject)
-        module_serializer = ModuleSerializer(modules, many=True).data
+        modules = FaModule.objects.filter(subject=subject)
+        module_serializer = FaModuleSerializer(modules, many=True).data
 
         quizzes = UserQuiz.objects.filter(user=user, subject=subject)
         subject_questions_number = 0
@@ -1507,7 +1507,7 @@ def add_suggested_quiz(request):
 
     questions = data.pop('questions', None)
 
-    subject = Subject.objects.get(name=quiz_subject)
+    subject = FakeSubject.objects.get(name=quiz_subject)
     quiz = AdminQuiz.objects.create(name=quiz_name, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
 
     for question_id in questions:
@@ -1539,8 +1539,8 @@ def delete_users_answers(request):
 def subject_question_num(request):
     data = request.data
     subject = data['subject']
-    subject = Subject.objects.get(name=subject)
-    modules = Module.objects.filter(subject=subject)
+    subject = FakeSubject.objects.get(name=subject)
+    modules = FaModule.objects.filter(subject=subject)
     lessons = Lesson.objects.filter(module__in=modules)
     h1s = H1.objects.filter(lesson__in=lessons)
     h2s = HeadLine.objects.filter(parent_headline__in=h1s)
@@ -1555,8 +1555,8 @@ def subject_question_num(request):
 def subject_question_ids(request):
     data = request.data
     subject = data['subject']
-    subject = Subject.objects.get(name=subject)
-    modules = Module.objects.filter(subject=subject)
+    subject = FakeSubject.objects.get(name=subject)
+    modules = FaModule.objects.filter(subject=subject)
     lessons = Lesson.objects.filter(module__in=modules)
     h1s = H1.objects.filter(lesson__in=lessons)
     h2s = HeadLine.objects.filter(parent_headline__in=h1s)
@@ -1635,7 +1635,7 @@ def subjectStatistics(request, subject, grade):
     # data = [
     #         {
     #             "subject_name": subject,
-    #             "total_ques_num": Question.objects.filter(tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
+    #             "total_ques_num": Question.objects.filter(tags__in=FakeSubject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
     #             "units": [
     #                 {
     #                     "unit_name": mod.name,
@@ -1660,7 +1660,7 @@ def subjectStatistics(request, subject, grade):
     #                             ],
     #                         } for les in Lesson.objects.filter(module=mod)
     #                     ],
-    #                 } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
+    #                 } for mod in FaModule.objects.filter(subject__name=subject, subject__grade=grade)
     #             ],
     #         },
     #     ]
@@ -1669,7 +1669,7 @@ def subjectStatistics(request, subject, grade):
         {
             "subject_name": subject,
             "total_ques_num": Question.objects.filter(
-                tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()
+                tags__in=FakeSubject.objects.get(name=subject, grade=grade).get_all_headlines()
             ).filter(multisectionquestion=None).distinct().count(),
             "units": [
                 {
@@ -1725,7 +1725,7 @@ def subjectStatistics(request, subject, grade):
                             ],
                         } for les in Lesson.objects.filter(module=mod)
                     ],
-                } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
+                } for mod in FaModule.objects.filter(subject__name=subject, subject__grade=grade)
             ],
         }
     ]
@@ -1825,8 +1825,8 @@ def create_pkg(request):
     pkg_author = 'f1c21507-048e-4c15-9ae0-9c0f0cf5f0e0'
     pkg_author = Author.objects.get(id=pkg_author)
 
-    for sub in Subject.objects.filter(grade=12):
-        mod = Module.objects.filter(subject=sub).first()
+    for sub in FakeSubject.objects.filter(grade=12):
+        mod = FaModule.objects.filter(subject=sub).first()
 
         lessons = Lesson.objects.filter(module=mod)[:2]
         filter_tags = set()
@@ -1841,12 +1841,18 @@ def create_pkg(request):
 
 @api_view(['POST'])
 def test(request):
-    return Response()
+    print('started')
+    for index, h1 in enumerate(H1.objects.all()):
+        if index%20==0:
+            print(index)
+        h1.fa_lesson = FaLesson.objects.get(id=h1.lesson.id)
+        h1.save()
+    return Response(1)
 
 @api_view(['POST'])
 def read_headlines(request):
     df = pd.read_excel(r'F:\kawkab\backend\database\English_2025.xlsx') # TODO
-    sub = Subject.objects.get(name='اللغة الإنجليزية', grade=11) # TODO
+    sub = FakeSubject.objects.get(name='اللغة الإنجليزية', grade=11) # TODO
     semester = 1 # TODO
     
     mod_order = 1
@@ -1869,7 +1875,7 @@ def read_headlines(request):
         if str(row['module']) == 'nan':
             continue
         row = row.to_dict()
-        mod, _ = Module.objects.get_or_create(name=str(row['module']).strip(), subject=sub, semester=semester)
+        mod, _ = FaModule.objects.get_or_create(name=str(row['module']).strip(), subject=sub, semester=semester)
         if _:
             print(mod.name)
             mod.order = mod_order

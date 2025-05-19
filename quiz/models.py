@@ -12,10 +12,37 @@ import sympy
 from sympy import symbols
 from sympy.parsing.latex import parse_latex
 
-
-class Subject(models.Model):
+class Lesson(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    name = models.CharField(max_length=30, null=True, blank=True)
+    name = models.CharField(max_length=200, null=True, blank=True)
+    order = models.IntegerField(null=True, blank=True)
+
+    def get_main_headlines(self):
+        return H1.objects.filter(lesson=self)
+
+    def get_all_headlines(self):
+        h1s = H1.objects.filter(lesson=self)
+        h2s = HeadLine.objects.filter(parent_headline__in=h1s)
+        h3s = HeadLine.objects.filter(parent_headline__in=h2s)
+        h4s = HeadLine.objects.filter(parent_headline__in=h3s)
+        h5s = HeadLine.objects.filter(parent_headline__in=h4s)
+        return set(h1s) | set(h2s) | set(h3s) | set(h4s) | set(h5s)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ['order']
+
+
+class Tag(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    name = models.CharField(max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.name}'
+
+class FakeSubject(Tag):
     grade = models.IntegerField(null=True, blank=True)
 
     def get_main_headlines(self):
@@ -23,7 +50,7 @@ class Subject(models.Model):
         return h1s
 
     def get_all_headlines(self, semester=None):
-        modules = Module.objects.filter(subject=self)
+        modules = FaModule.objects.filter(subject=self)
         if semester is not None:
             modules.filter(semester=semester)
         lessons = Lesson.objects.filter(module__in=modules)
@@ -37,16 +64,13 @@ class Subject(models.Model):
     def __str__(self):
         return f'{self.name} --{self.grade}'
 
-
-class Module(models.Model):
+class FaModule(Tag):
     semester_choices = (
         (1, 'الفصل الأول'),
         (2, 'الفصل الثاني'),
     )
 
-    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    name = models.CharField(max_length=200, null=True, blank=True)
-    subject = models.ForeignKey(Subject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    subject = models.ForeignKey(FakeSubject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     semester = models.IntegerField(choices=semester_choices, null=True, blank=True)
     order = models.IntegerField(null=True, blank=True)
 
@@ -69,11 +93,8 @@ class Module(models.Model):
     class Meta:
         ordering = ['order']
 
-
-class Lesson(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    name = models.CharField(max_length=200, null=True, blank=True)
-    module = models.ForeignKey(Module, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+class FaLesson(Tag):
+    module = models.ForeignKey(FaModule, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.IntegerField(null=True, blank=True)
 
     def get_main_headlines(self):
@@ -92,15 +113,6 @@ class Lesson(models.Model):
 
     class Meta:
         ordering = ['module', 'order']
-
-
-class Tag(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
-    name = models.CharField(max_length=200, null=True, blank=True)
-
-    def __str__(self):
-        return f'{self.name}'
-
 
 class SpecialTags(Tag):
     pass
@@ -128,6 +140,7 @@ class HeadBase(Tag):
 
 class H1(HeadBase):
     lesson = models.ForeignKey(Lesson, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    fa_lesson = models.ForeignKey(FaLesson, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         ordering = ['lesson', 'order']
@@ -341,7 +354,7 @@ class Report(models.Model):
 class Quiz(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    subject = models.ForeignKey(Subject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    subject = models.ForeignKey(FakeSubject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     duration = models.DurationField(blank=True, null=True)
 
     # def __str__(self):
@@ -382,7 +395,7 @@ class Packages(models.Model):
 
     creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
-    subject = models.ForeignKey(Subject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    subject = models.ForeignKey(FakeSubject, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     author = models.ForeignKey(Author, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     questions = models.ManyToManyField(Question, symmetrical=False, blank=True)
 

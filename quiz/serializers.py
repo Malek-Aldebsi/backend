@@ -2,14 +2,14 @@ from datetime import timedelta
 import datetime
 from django.db.models import Sum
 from rest_framework import serializers
-from .models import ReelInteraction, SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
+from .models import ReelInteraction, SavedQuestion, FakeSubject, Tag, FaModule, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
     AdminMultipleChoiceAnswer, H1, UserAnswer, AdminFinalAnswer, UserFinalAnswer, UserMultipleChoiceAnswer, UserQuiz, \
     MultiSectionQuestion, UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz
 
 
-class SubjectSerializer(serializers.ModelSerializer):
+class FakeSubjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Subject
+        model = FakeSubject
         fields = ['id', 'name']
 
 
@@ -31,7 +31,7 @@ class LessonSerializer(serializers.ModelSerializer):
         fields = ['name', 'h1s']
 
 
-class ModuleSerializer(serializers.ModelSerializer):
+class FaModuleSerializer(serializers.ModelSerializer):
     lessons = serializers.SerializerMethodField()
 
     def get_lessons(self, obj):
@@ -40,7 +40,7 @@ class ModuleSerializer(serializers.ModelSerializer):
         return serializer.data
 
     class Meta:
-        model = Module
+        model = FaModule
         fields = ['name', 'lessons', 'semester']
 
 
@@ -396,7 +396,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
 
 
 class AdminQuizSerializer(serializers.ModelSerializer):
-    subject = SubjectSerializer(many=False)
+    subject = FakeSubjectSerializer(many=False)
     duration = serializers.SerializerMethodField()
     questions_num = serializers.SerializerMethodField()
 
