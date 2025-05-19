@@ -128,8 +128,8 @@ def questions_statistics(question, answer, correct_questions, ideal_duration, at
         tag = tag.h1
 
         h1 = h1s.get(tag.name, {})
-        lesson = lessons.get(tag.lesson.name, {})
-        module = modules.get(tag.lesson.module.name, {})
+        lesson = lessons.get(tag.parent_lesson.name, {})
+        module = modules.get(tag.parent_lesson.parent_module.name, {})
 
         if answer == question.correct_answer:
             h1['correct'] = h1.get('correct', 0) + 1
@@ -155,8 +155,8 @@ def questions_statistics(question, answer, correct_questions, ideal_duration, at
             module['duration'] = module.get('duration', 0)
 
         h1s[tag.name] = h1
-        lessons[tag.lesson.name] = lesson
-        modules[tag.lesson.module.name] = module
+        lessons[tag.parent_lesson.name] = lesson
+        modules[tag.parent_lesson.parent_module.name] = module
 
     return correct_questions, ideal_duration, attempt_duration, modules, lessons, h1s
 

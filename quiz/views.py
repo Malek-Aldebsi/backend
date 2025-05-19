@@ -12,12 +12,12 @@ from school import settings
 from user.models import Account, Ad, User
 from user.serializers import AdSerializer, UserSerializer
 from user.utils import _check_user, get_user, _check_admin
-from .models import FaLesson, FaModule, FaModule, ReelInteraction, ReelQuestion, FakeSubject, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
+from .models import Module, Module, ReelInteraction, ReelQuestion, Subject, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
     UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
     UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, \
     SpecialTags, Packages
-from .serializers import FaModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
+from .serializers import ModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
 from django.shortcuts import render
 
 from django.db.models import Count, Q, Sum
@@ -117,7 +117,7 @@ def subject_set(request):
 
     if _check_user(data):
         user = get_user(data)
-        subjects = FakeSubject.objects.filter(grade=user.grade).values('id', 'name')
+        subjects = Subject.objects.filter(grade=user.grade).values('id', 'name')
         return Response(subjects)
 
     else:
@@ -130,11 +130,11 @@ def headline_set(request):
     subject_id = data.pop('subject_id', None)
 
     if _check_user(data):
-        subject = FakeSubject.objects.get(id=subject_id)
+        subject = Subject.objects.get(id=subject_id)
         headlines = subject.get_main_headlines().values('id', 'name')
 
-        modules = FaModule.objects.filter(subject=subject)
-        module_serializer = FaModuleSerializer(modules, many=True).data
+        modules = Module.objects.filter(parent_subject=subject)
+        module_serializer = ModuleSerializer(modules, many=True).data
         return Response({'modules': module_serializer, 'headlines': headlines})
     else:
         return Response(0)
@@ -156,7 +156,7 @@ def build_quiz(request):
     #   "quiz_level": 0
     # }
     def calculate_module_weights(selected_h1s):
-        modules = FaModule.objects.annotate(
+        modules = Module.objects.annotate(
             total_h1s=Count('lesson__h1', distinct=True),
             common_h1s=Count('lesson__h1', filter=Q(lesson__h1__in=selected_h1s), distinct=True)
         ).filter(common_h1s__gt=0)
@@ -191,10 +191,10 @@ def build_quiz(request):
         
         lessons = Lesson.objects.filter(
             id__in=lesson_weights.keys()
-        ).select_related('module')
+        ).select_related('parent_module')
         
         for lesson in lessons:
-            module_id = str(lesson.module.id)
+            module_id = str(lesson.parent_module.id)
             if module_id in module_weights:
                 modules_lessons[module_id]['lessons'][str(lesson.id)] = lesson_weights[str(lesson.id)]
                 modules_lessons[module_id]['total_weight'] = module_weights[module_id]
@@ -242,15 +242,15 @@ def build_quiz(request):
         # Create a dictionary to count how many selected H1s exist per lesson
         h1s_per_lesson = defaultdict(int)
         for h1 in selected_h1s:
-            if h1.lesson_id:  # Only consider H1s that have a lesson assigned
-                h1s_per_lesson[h1.lesson_id] += 1
+            if h1.parent_lesson_id:  # Only consider H1s that have a lesson assigned
+                h1s_per_lesson[h1.parent_lesson_id] += 1
         
         # Now distribute weights
         for h1 in selected_h1s:
-            if not h1.lesson_id:
+            if not h1.parent_lesson_id:
                 continue  # Skip H1s without lessons
                 
-            lesson_id = h1.lesson_id
+            lesson_id = h1.parent_lesson_id
             lesson_questions_weight = lesson_question_weights.get(str(lesson_id), 0)
             
             if lesson_questions_weight > 0 and h1s_per_lesson[lesson_id] > 0:
@@ -391,7 +391,7 @@ def get_reels(request):
         decay_days = 60 # after this number we suggest the reel not seen by the user even if he see it before    
         question_num = 20        
         
-        subject = FakeSubject.objects.filter(id=subject_id)
+        subject = Subject.objects.filter(id=subject_id)
         tag_ids = [headline.id for headline in subject.get_all_headlines(semester)]
 
         # Sample n ReelQuestion objects with any of tag_ids where sampling probability ∝ time since last view.    
@@ -515,7 +515,7 @@ def submit_writing_question(request):
         user.save()
 
         question = Question.objects.get(id=question)
-        subject = question.tags.exclude(headbase=None).first().headbase.h1.lesson.module.subject
+        subject = question.tags.exclude(headbase=None).first().headbase.h1.parent_lesson.parent_module.parent_subject
         quiz = UserQuiz.objects.create(subject=subject, user=user)
 
         image = base64.b64decode(answer)
@@ -553,7 +553,7 @@ def mark_quiz(request):
         lessons = {}
         h1s = {}
 
-        subject = FakeSubject.objects.get(id=subject)
+        subject = Subject.objects.get(id=subject)
         quiz = UserQuiz.objects.create(subject=subject, user=user,
                                        duration=datetime.timedelta(
                                            seconds=int(quiz_duration)) if quiz_duration is not None else None)
@@ -654,7 +654,7 @@ def similar_questions(request):
 
             while hasattr(tag, 'headline'):
                 tag = tag.headline.parent_headline
-            lesson = tag.h1.lesson
+            lesson = tag.h1.parent_lesson
 
             # add headlines questions
             headlines = lesson.get_all_headlines()
@@ -684,7 +684,7 @@ def similar_questions(request):
             wastes_headlines |= weighted_headlines[levels_weight[similarity_level]]
 
             weighted_headlines[
-                levels_weight[similarity_level + 1]] = lesson.module.get_all_headlines() - wastes_headlines
+                levels_weight[similarity_level + 1]] = lesson.parent_module.get_all_headlines() - wastes_headlines
 
             # add question weight
             for weight, headlines in weighted_headlines.items():
@@ -754,7 +754,7 @@ def similar_questions(request):
         tag = questions[0].tags.exclude(headbase=None).first().headbase
         while hasattr(tag, 'headline'):
             tag = tag.headline.parent_headline
-        subject = {'name': str(tag.h1.lesson.module.subject.name), 'id': str(tag.h1.lesson.module.subject.id)}
+        subject = {'name': str(tag.h1.parent_lesson.parent_module.parent_subject.name), 'id': str(tag.h1.parent_lesson.parent_module.parent_subject.id)}
         return Response({'questions': serializer.data, 'subject': subject})
 
     return Response(serializer.data)
@@ -872,7 +872,7 @@ def saved_questions(request):
             date = saved_question.creationDate.strftime('%I:%M %p • %d/%m/%Y • %A')
             date = date[:24] + days[date[24:]]
 
-            subject = saved_question.question.tags.exclude(headbase__h1=None).first().headbase.h1.lesson.module.subject
+            subject = saved_question.question.tags.exclude(headbase__h1=None).first().headbase.h1.parent_lesson.parent_module.parent_subject
             subject = {'id': subject.id, 'name': subject.name}
 
             body = saved_question.question.body
@@ -1051,8 +1051,8 @@ def quiz_history(request):
                     while hasattr(tag, 'headline'):
                         tag = tag.headline.parent_headline
                     h1s.add(tag.h1.name)
-                    lessons.add(tag.h1.lesson.name)
-                    modules.add(tag.h1.lesson.module.name)
+                    lessons.add(tag.h1.parent_lesson.name)
+                    modules.add(tag.h1.parent_lesson.parent_module.name)
 
                 quiz_list.append({
                     'id': str(quiz.id),
@@ -1084,11 +1084,11 @@ def subject_analysis(request):
     if _check_user(data):
         user = get_user(data)
 
-        subject = FakeSubject.objects.get(id=subject)
+        subject = Subject.objects.get(id=subject)
         headlines = subject.get_main_headlines().values('id', 'name')
 
-        modules = FaModule.objects.filter(subject=subject)
-        module_serializer = FaModuleSerializer(modules, many=True).data
+        modules = Module.objects.filter(parent_subject=subject)
+        module_serializer = ModuleSerializer(modules, many=True).data
 
         quizzes = UserQuiz.objects.filter(user=user, subject=subject)
         subject_questions_number = 0
@@ -1185,8 +1185,8 @@ def get_shared_question(request):
         tag = question_obj.first().tags.exclude(headbase=None).first().headbase
         while hasattr(tag, 'headline'):
             tag = tag.headline.parent_headline
-        subject_id = str(tag.h1.lesson.module.subject.id)
-        subject_name = str(tag.h1.lesson.module.subject.name)
+        subject_id = str(tag.h1.parent_lesson.parent_module.parent_subject.id)
+        subject_name = str(tag.h1.parent_lesson.parent_module.parent_subject.name)
 
         serializer = QuestionSerializer(question_obj.first(), many=False).data # TODO add the user id to get saved field
         return Response({'question': serializer, 'subject': {'id': subject_id, 'name':subject_name}})
@@ -1234,7 +1234,7 @@ def get_admin_suggestions(request):
     if _check_admin(data):
         h1s = H1.objects.all().annotate(
             level=Value(1, output_field=IntegerField()),
-            parent=F('lesson__name')
+            parent=F('parent_lesson__name')
         ).values('name', 'level', 'parent')
 
         headlines = HeadLine.objects.all().annotate(
@@ -1323,7 +1323,7 @@ def add_or_edit_multiple_choice_question(request):
     
     for i in range(len(headlines)):
         if headlines_level[i] == 1:
-            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), lesson__name=headlines[i].split(' -- ')[1].strip())
+            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_lesson__name=headlines[i].split(' -- ')[1].strip())
             question.tags.add(headline)
         else:
             headline = HeadLine.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_headline__name=headlines[i].split(' -- ')[1].strip(), level=headlines_level[i])
@@ -1392,7 +1392,7 @@ def add_or_edit_final_answer_question(request):
 
     for i in range(len(headlines)):
         if headlines_level[i] == 1:
-            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), lesson__name=headlines[i].split(' -- ')[1].strip())
+            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_lesson__name=headlines[i].split(' -- ')[1].strip())
             question.tags.add(headline)
         else:
             headline = HeadLine.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_headline__name=headlines[i].split(' -- ')[1].strip(), level=headlines_level[i])
@@ -1473,7 +1473,7 @@ def add_or_edit_multi_section_question(request):
 
         for i in range(len(ques['headlines'])):
             if ques['headlinesLevel'][i] == 1:
-                headline = H1.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), lesson__name=ques['headlines'][i].split(' -- ')[1].strip())
+                headline = H1.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), parent_lesson__name=ques['headlines'][i].split(' -- ')[1].strip())
             else:
                 headline = HeadLine.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), parent_headline__name=ques['headlines'][i].split(' -- ')[1].strip(), level=ques['headlinesLevel'][i])
 
@@ -1507,7 +1507,7 @@ def add_suggested_quiz(request):
 
     questions = data.pop('questions', None)
 
-    subject = FakeSubject.objects.get(name=quiz_subject)
+    subject = Subject.objects.get(name=quiz_subject)
     quiz = AdminQuiz.objects.create(name=quiz_name, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
 
     for question_id in questions:
@@ -1539,10 +1539,10 @@ def delete_users_answers(request):
 def subject_question_num(request):
     data = request.data
     subject = data['subject']
-    subject = FakeSubject.objects.get(name=subject)
-    modules = FaModule.objects.filter(subject=subject)
-    lessons = Lesson.objects.filter(module__in=modules)
-    h1s = H1.objects.filter(lesson__in=lessons)
+    subject = Subject.objects.get(name=subject)
+    modules = Module.objects.filter(parent_subject=subject)
+    lessons = Lesson.objects.filter(parent_module__in=modules)
+    h1s = H1.objects.filter(parent_lesson__in=lessons)
     h2s = HeadLine.objects.filter(parent_headline__in=h1s)
     h3s = HeadLine.objects.filter(parent_headline__in=h2s)
     h4s = HeadLine.objects.filter(parent_headline__in=h3s)
@@ -1555,10 +1555,10 @@ def subject_question_num(request):
 def subject_question_ids(request):
     data = request.data
     subject = data['subject']
-    subject = FakeSubject.objects.get(name=subject)
-    modules = FaModule.objects.filter(subject=subject)
-    lessons = Lesson.objects.filter(module__in=modules)
-    h1s = H1.objects.filter(lesson__in=lessons)
+    subject = Subject.objects.get(name=subject)
+    modules = Module.objects.filter(parent_subject=subject)
+    lessons = Lesson.objects.filter(parent_module__in=modules)
+    h1s = H1.objects.filter(parent_lesson__in=lessons)
     h2s = HeadLine.objects.filter(parent_headline__in=h1s)
     h3s = HeadLine.objects.filter(parent_headline__in=h2s)
     h4s = HeadLine.objects.filter(parent_headline__in=h3s)
@@ -1635,7 +1635,7 @@ def subjectStatistics(request, subject, grade):
     # data = [
     #         {
     #             "subject_name": subject,
-    #             "total_ques_num": Question.objects.filter(tags__in=FakeSubject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
+    #             "total_ques_num": Question.objects.filter(tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()).filter(multisectionquestion=None).distinct().count(),
     #             "units": [
     #                 {
     #                     "unit_name": mod.name,
@@ -1656,11 +1656,11 @@ def subjectStatistics(request, subject, grade):
     #                                                 {h2})).filter(multisectionquestion=None).distinct().count()                                           
     #                                         } for h2 in HeadLine.objects.filter(parent_headline=h1)
     #                                     ],                                                  
-    #                                 } for h1 in H1.objects.filter(lesson=les)
+    #                                 } for h1 in H1.objects.filter(parent_lesson=les)
     #                             ],
-    #                         } for les in Lesson.objects.filter(module=mod)
+    #                         } for les in Lesson.objects.filter(parent_module=mod)
     #                     ],
-    #                 } for mod in FaModule.objects.filter(subject__name=subject, subject__grade=grade)
+    #                 } for mod in Module.objects.filter(subject__name=subject, subject__grade=grade)
     #             ],
     #         },
     #     ]
@@ -1669,7 +1669,7 @@ def subjectStatistics(request, subject, grade):
         {
             "subject_name": subject,
             "total_ques_num": Question.objects.filter(
-                tags__in=FakeSubject.objects.get(name=subject, grade=grade).get_all_headlines()
+                tags__in=Subject.objects.get(name=subject, grade=grade).get_all_headlines()
             ).filter(multisectionquestion=None).distinct().count(),
             "units": [
                 {
@@ -1721,11 +1721,11 @@ def subjectStatistics(request, subject, grade):
                                             ],
                                         } for h2 in HeadLine.objects.filter(parent_headline=h1)
                                     ],
-                                } for h1 in H1.objects.filter(lesson=les)
+                                } for h1 in H1.objects.filter(parent_lesson=les)
                             ],
-                        } for les in Lesson.objects.filter(module=mod)
+                        } for les in Lesson.objects.filter(parent_module=mod)
                     ],
-                } for mod in FaModule.objects.filter(subject__name=subject, subject__grade=grade)
+                } for mod in Module.objects.filter(parent_subject__name=subject, parent_subject__grade=grade)
             ],
         }
     ]
@@ -1825,10 +1825,10 @@ def create_pkg(request):
     pkg_author = 'f1c21507-048e-4c15-9ae0-9c0f0cf5f0e0'
     pkg_author = Author.objects.get(id=pkg_author)
 
-    for sub in FakeSubject.objects.filter(grade=12):
-        mod = FaModule.objects.filter(subject=sub).first()
+    for sub in Subject.objects.filter(grade=12):
+        mod = Module.objects.filter(parent_subject=sub).first()
 
-        lessons = Lesson.objects.filter(module=mod)[:2]
+        lessons = Lesson.objects.filter(parent_module=mod)[:2]
         filter_tags = set()
         for les in lessons:
             filter_tags |= les.get_all_headlines()
@@ -1845,14 +1845,14 @@ def test(request):
     for index, h1 in enumerate(H1.objects.all()):
         if index%20==0:
             print(index)
-        h1.fa_lesson = FaLesson.objects.get(id=h1.lesson.id)
+        h1.fa_lesson = Lesson.objects.get(id=h1.parent_lesson.id)
         h1.save()
     return Response(1)
 
 @api_view(['POST'])
 def read_headlines(request):
     df = pd.read_excel(r'F:\kawkab\backend\database\English_2025.xlsx') # TODO
-    sub = FakeSubject.objects.get(name='اللغة الإنجليزية', grade=11) # TODO
+    sub = Subject.objects.get(name='اللغة الإنجليزية', grade=11) # TODO
     semester = 1 # TODO
     
     mod_order = 1
@@ -1875,7 +1875,7 @@ def read_headlines(request):
         if str(row['module']) == 'nan':
             continue
         row = row.to_dict()
-        mod, _ = FaModule.objects.get_or_create(name=str(row['module']).strip(), subject=sub, semester=semester)
+        mod, _ = Module.objects.get_or_create(name=str(row['module']).strip(), parent_subject=sub, semester=semester)
         if _:
             print(mod.name)
             mod.order = mod_order
@@ -1885,7 +1885,7 @@ def read_headlines(request):
             mod_order += 1
             les_order = 1
 
-        les, _ = Lesson.objects.get_or_create(name=str(row['lesson']).strip(), module=mod)
+        les, _ = Lesson.objects.get_or_create(name=str(row['lesson']).strip(), parent_module=mod)
         if _:
             print(les.name)
             les.order = les_order
@@ -1896,7 +1896,7 @@ def read_headlines(request):
             h1_order = 1
 
         if str(row['h1']) != 'nan':
-            h1, _ = H1.objects.get_or_create(name=str(row['h1']).strip(), lesson=les)
+            h1, _ = H1.objects.get_or_create(name=str(row['h1']).strip(), parent_lesson=les)
             if _:
                 print(h1.name)
                 h1.order = h1_order

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
-from .models import FaLesson, FaModule, FakeSubject, ReelInteraction, ReelQuestion, Lesson, \
+from .models import ReelInteraction, ReelQuestion, Subject, Module, Lesson, \
     AdminAnswer, UserAnswer, AdminFinalAnswer, UserFinalAnswer, AdminMultipleChoiceAnswer, \
     UserMultipleChoiceAnswer, FinalAnswerQuestion, MultipleChoiceQuestion, Solution, AdminQuiz, UserQuiz, Question, \
     HeadLine, H1, LastImageName, Author, HeadLineInst, MultiSectionQuestion, \
@@ -33,7 +33,7 @@ class UserWritingAnswerExportAllFields(ExportActionMixin, admin.ModelAdmin):
 
 
 class QuestionAdmin(ExportActionMixin, admin.ModelAdmin):
-    search_fields = ['id', 'body', 'image', 'tags__name', 'tags__headbase__h1__lesson__name', ]# tags__headbase__h1__lesson__module__name  tags__headbase__h1__lesson__module__subject__name
+    search_fields = ['id', 'body', 'image', 'tags__name', 'tags__headbase__h1__parent_lesson__name', 'tags__headbase__h1__parent_lesson__parent_module__name', 'tags__headbase__h1__parent_lesson__parent_module__parent_subject__name']
     ordering = ('-creationDate',)
 
 
@@ -48,13 +48,13 @@ class SubjectAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 class ModuleAdmin(ExportActionMixin, admin.ModelAdmin):
-    search_fields = ['id', 'name', 'semester'] #, 'subject__name'
-    ordering = ('order',) # 'subject', 
+    search_fields = ['id', 'name', 'parent_subject__name', 'semester']
+    ordering = ('parent_subject', 'order',)
 
 
 class LessonAdmin(ExportActionMixin, admin.ModelAdmin):
-    search_fields = ['id', 'name', ] #module__name , 'module__subject__name'
-    ordering = ('order',) #module 'module__subject', 
+    search_fields = ['id', 'name', 'parent_module__name', 'parent_module__parent_subject__name']
+    ordering = ('parent_module__parent_subject', 'parent_module', 'order',)
 
 
 class TagAdmin(ExportActionMixin, admin.ModelAdmin):
@@ -62,8 +62,8 @@ class TagAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 class H1Admin(ExportActionMixin, admin.ModelAdmin):
-    search_fields = ['id', 'name', 'lesson__name', ]#lesson__module__name  lesson__module__subject__name
-    ordering = ('lesson', 'order',)#lesson__module__subject lesson__module
+    search_fields = ['id', 'name', 'parent_lesson__name', 'parent_lesson__parent_module__name', 'parent_lesson__parent_module__parent_subject__name']
+    ordering = ('parent_lesson__parent_module__parent_subject', 'parent_lesson__parent_module', 'parent_lesson', 'order',)
 
 
 class HeadLineAdmin(ExportActionMixin, admin.ModelAdmin):
@@ -96,8 +96,8 @@ class ReportAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 class UserQuizAdmin(ExportActionMixin, admin.ModelAdmin):
-    list_display = ('creationDate', 'user_id', 'user_name', 'questions_num', 'duration')#subject
-    search_fields = ['id', 'user__userUID', 'user__firstName',]#subject__name
+    list_display = ('creationDate', 'user_id', 'user_name', 'subject', 'questions_num', 'duration')
+    search_fields = ['id', 'user__userUID', 'user__firstName', 'subject__name']
     ordering = ('-creationDate',)
 
     def user_id(self, obj):
@@ -109,8 +109,8 @@ class UserQuizAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 class AdminQuizAdmin(ExportActionMixin, admin.ModelAdmin):
-    list_display = ('creationDate', 'name', 'questions_num', 'duration')#subject
-    search_fields = ['id', 'name', 'questions__id', 'questions__body']#subject__name
+    list_display = ('creationDate', 'name', 'subject', 'questions_num', 'duration')
+    search_fields = ['id', 'name', 'questions__id', 'questions__body', 'subject__name']
     ordering = ('-creationDate',)
 
     def questions_num(self, obj):
@@ -118,8 +118,8 @@ class AdminQuizAdmin(ExportActionMixin, admin.ModelAdmin):
 
 
 class PackagesAdmin(ExportActionMixin, admin.ModelAdmin):
-    list_display = ('id', 'name', 'creationDate', 'author', 'questions_num')#subject
-    search_fields = ['id', 'name', 'creationDate', 'author', 'questions_num']#subject
+    list_display = ('id', 'name', 'creationDate', 'subject', 'author', 'questions_num')
+    search_fields = ['id', 'name', 'creationDate', 'subject', 'author', 'questions_num']
     ordering = ('-creationDate',)
 
     def questions_num(self, obj):
@@ -139,10 +139,9 @@ admin.site.register(AdminFinalAnswer, ExportAllFields)
 admin.site.register(UserMultiSectionAnswer, ExportAllFields)
 admin.site.register(UserWritingAnswer, UserWritingAnswerExportAllFields)
 
-admin.site.register(FakeSubject, SubjectAdmin)
-admin.site.register(FaModule, ModuleAdmin)
+admin.site.register(Subject, SubjectAdmin)
+admin.site.register(Module, ModuleAdmin)
 admin.site.register(Lesson, LessonAdmin)
-admin.site.register(FaLesson, LessonAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(H1, H1Admin)
 admin.site.register(HeadLine, HeadLineAdmin)

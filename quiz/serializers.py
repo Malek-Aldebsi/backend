@@ -2,14 +2,14 @@ from datetime import timedelta
 import datetime
 from django.db.models import Sum
 from rest_framework import serializers
-from .models import ReelInteraction, SavedQuestion, FakeSubject, Tag, FaModule, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
+from .models import ReelInteraction, SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
     AdminMultipleChoiceAnswer, H1, UserAnswer, AdminFinalAnswer, UserFinalAnswer, UserMultipleChoiceAnswer, UserQuiz, \
     MultiSectionQuestion, UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz
 
 
-class FakeSubjectSerializer(serializers.ModelSerializer):
+class SubjectSerializer(serializers.ModelSerializer):
     class Meta:
-        model = FakeSubject
+        model = Subject
         fields = ['id', 'name']
 
 
@@ -23,7 +23,7 @@ class LessonSerializer(serializers.ModelSerializer):
     h1s = serializers.SerializerMethodField()
 
     def get_h1s(self, obj):
-        h1s = H1.objects.filter(lesson=obj).values_list('id', flat=True)
+        h1s = H1.objects.filter(parent_lesson=obj).values_list('id', flat=True)
         return h1s
 
     class Meta:
@@ -31,16 +31,16 @@ class LessonSerializer(serializers.ModelSerializer):
         fields = ['name', 'h1s']
 
 
-class FaModuleSerializer(serializers.ModelSerializer):
+class ModuleSerializer(serializers.ModelSerializer):
     lessons = serializers.SerializerMethodField()
 
     def get_lessons(self, obj):
-        lessons = Lesson.objects.filter(module=obj)
+        lessons = Lesson.objects.filter(parent_module=obj)
         serializer = LessonSerializer(lessons, many=True)
         return serializer.data
 
     class Meta:
-        model = FaModule
+        model = Module
         fields = ['name', 'lessons', 'semester']
 
 
@@ -119,7 +119,7 @@ class ReelQuestionSerializer(serializers.ModelSerializer):
 
     def get_subject(self, obj):
         tag = obj.tags.exclude(lesson=None).first()
-        return tag.lesson.module.subject.name
+        return tag.lesson.parent_module.parent_subject.name
     
     def get_lesson(self, obj):
         tag = obj.tags.exclude(lesson=None).first()
@@ -396,7 +396,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
 
 
 class AdminQuizSerializer(serializers.ModelSerializer):
-    subject = FakeSubjectSerializer(many=False)
+    subject = SubjectSerializer(many=False)
     duration = serializers.SerializerMethodField()
     questions_num = serializers.SerializerMethodField()
 
