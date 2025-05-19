@@ -22,8 +22,10 @@ class Subject(models.Model):
         h1s = H1.objects.filter(lesson__module__subject=self)
         return h1s
 
-    def get_all_headlines(self):
+    def get_all_headlines(self, semester=None):
         modules = Module.objects.filter(subject=self)
+        if semester is not None:
+            modules.filter(semester=semester)
         lessons = Lesson.objects.filter(module__in=modules)
         h1s = H1.objects.filter(lesson__in=lessons)
         h2s = HeadLine.objects.filter(parent_headline__in=h1s)
@@ -288,20 +290,20 @@ class Question(models.Model):
 class FinalAnswerQuestion(Question):
     correct_answer = models.ForeignKey(AdminFinalAnswer, db_constraint=False, null=True, blank=True, on_delete=models.CASCADE)
 
+class ReelQuestion(Question):
+    correct_answer = models.ForeignKey(AdminFinalAnswer, db_constraint=False, null=True, blank=True, on_delete=models.CASCADE)
+    likes = models.IntegerField(default=0, blank=True)
 
 class MultipleChoiceQuestion(Question):
     correct_answer = models.ForeignKey(AdminMultipleChoiceAnswer, related_name='correct_answer', db_constraint=False, null=True, blank=True, on_delete=models.CASCADE)
-    choices = models.ManyToManyField(AdminMultipleChoiceAnswer, related_name='choices', symmetrical=False, blank=True)
-
+    choices = models.ManyToManyField(AdminMultipleChoiceAnswer, related_name='choices', symmetrical=False, blank=True) 
 
 class MultiSectionQuestion(Question):
     is_extraction_question = models.BooleanField(default=False, blank=True)
     sub_questions = models.ManyToManyField(Question, related_name='sections', symmetrical=False, blank=True)
 
-
 class WritingQuestion(Question):
     pass
-
 
 class Solution(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
@@ -353,9 +355,21 @@ class AdminQuiz(Quiz):
     def __str__(self):
         return self.name
 
-
 class UserQuiz(Quiz):
     user = models.ForeignKey(User, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+
+class ReelInteraction(models.Model):
+    creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    user = models.ForeignKey(User, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    reel = models.ForeignKey(ReelQuestion, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    views = models.PositiveIntegerField(default=0) # how many time the user see it
+    last_view_at = models.DateTimeField(null=True, blank=True)
+    taps = models.PositiveIntegerField(default=0) # how many time the user open it
+    last_tap_at = models.DateTimeField(null=True, blank=True)
+    favorite = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'reel')  # One record per user-question pair
 
 
 class LastImageName(models.Model):

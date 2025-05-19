@@ -2,7 +2,7 @@ from datetime import timedelta
 import datetime
 from django.db.models import Sum
 from rest_framework import serializers
-from .models import SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
+from .models import ReelInteraction, SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
     AdminMultipleChoiceAnswer, H1, UserAnswer, AdminFinalAnswer, UserFinalAnswer, UserMultipleChoiceAnswer, UserQuiz, \
     MultiSectionQuestion, UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz
 
@@ -100,6 +100,45 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
             user__id=user_id,
             question=obj
         ).exists()
+
+class ReelQuestionSerializer(serializers.ModelSerializer):
+    author = serializers.SerializerMethodField()
+    subject = serializers.SerializerMethodField()
+    lesson = serializers.SerializerMethodField()
+    correct_answer = AdminFinalAnswerSerializer(many=False)
+    type = serializers.SerializerMethodField()
+    idealDuration = serializers.SerializerMethodField()
+    favorite = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FinalAnswerQuestion
+        fields = ['id', 'body', 'image', 'level', 'author', 'subject', 'lesson', 'idealDuration', 'hint', 'correct_answer', 'type', 'likes', 'favorite']
+
+    def get_author(self, obj):
+        return obj.tags.exclude(author=None).first().author.name
+
+    def get_subject(self, obj):
+        tag = obj.tags.exclude(lesson=None).first()
+        return tag.lesson.module.subject.name
+    
+    def get_lesson(self, obj):
+        tag = obj.tags.exclude(lesson=None).first()
+        return tag.lesson.name
+    
+    def get_type(self, obj):
+        return 'reelQuestion'
+
+    def get_idealDuration(self, obj):
+        attempt_duration = obj.idealDuration
+        return attempt_duration.seconds
+
+    def get_favorite(self, obj):        
+        user_id = self.context.get('user_id')
+        
+        return ReelInteraction.objects.filter(
+            user__id=user_id,
+            reel=obj
+        ).favorite
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     correct_answer = AdminMultipleChoiceAnswerSerializer(many=False)
@@ -240,6 +279,8 @@ class QuestionSerializer(serializers.ModelSerializer):
             serializer = MultiSectionQuestionSerializer(obj.multisectionquestion, context={'user_id': self.context.get('user_id')}).data
         elif hasattr(obj, 'writingquestion'):
             serializer = WritingQuestionSerializer(obj.writingquestion, context={'user_id': self.context.get('user_id')}).data
+        elif hasattr(obj, 'reelquestion'):
+            serializer = ReelQuestionSerializer(obj.reelquestion, context={'user_id': self.context.get('user_id')}).data
         else:
             serializer = super().to_representation(obj)
         return serializer

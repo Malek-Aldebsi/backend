@@ -5,12 +5,14 @@ from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
+from datetime import timedelta, date
+from django.db.models.functions import Now, Coalesce, Log
 
 from school import settings
-from user.models import Account, Ad
+from user.models import Account, Ad, User
 from user.serializers import AdSerializer, UserSerializer
 from user.utils import _check_user, get_user, _check_admin
-from .models import Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
+from .models import ReelInteraction, ReelQuestion, Subject, Module, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
     MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
     UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
     UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, \
@@ -20,6 +22,7 @@ from django.shortcuts import render
 
 from django.db.models import Count, Q, Sum
 from django.db.models import Prefetch
+from django.utils import timezone
 
 import random
 import datetime
@@ -32,8 +35,9 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
 import itertools
 from django.db.models import Case, When, Value, FloatField, F, Max
 from django.db.models.functions import Random
-from django.db.models import Case, When, Value, FloatField, Max
-from django.db.models.functions import Random
+from django.db.models import ExpressionWrapper
+from django.db.models.functions import Coalesce
+from django.db.models import OuterRef, Subquery
 
 # import re
 
@@ -375,6 +379,126 @@ def get_writing_question(request):
     else:
         return Response(0)
 
+
+@api_view(['POST'])
+def get_reels(request):
+    data = request.data
+    semester = data.pop('semester', None)
+    subject_id = data.pop('subject', None)
+    if _check_user(data):
+        user = get_user(data)
+
+        decay_days = 60 # after this number we suggest the reel not seen by the user even if he see it before    
+        question_num = 20        
+        
+        subject = Subject.objects.filter(id=subject_id)
+        tag_ids = [headline.id for headline in subject.get_all_headlines(semester)]
+
+        # Sample n ReelQuestion objects with any of tag_ids where sampling probability ∝ time since last view.    
+        T = decay_days * 86400  # decay period in seconds
+
+        # Real table names
+        rq_table = ReelQuestion._meta.db_table         
+        ri_table = ReelInteraction._meta.db_table      
+        q_table  = ReelQuestion._meta.get_parent_list()[0]._meta.db_table
+        q_tags_table = f"{q_table}_tags"
+
+        sql = f"""
+        SELECT rq.*
+        FROM {rq_table} AS rq
+        LEFT JOIN {ri_table} AS ri
+        ON ri.reel_id = rq.question_ptr_id
+        AND ri.user_id = %s
+        {"JOIN " + q_tags_table + " AS qt ON qt.question_id = rq.question_ptr_id" if tag_ids else ""}
+        {f"WHERE qt.tag_id IN %s" if tag_ids else ""}
+        ORDER BY (
+            -LN(RANDOM()) /
+            CASE
+                WHEN ri.last_view_at IS NULL THEN 1.0
+                ELSE LEAST(
+                    1.0,
+                    EXTRACT(EPOCH FROM NOW() - ri.last_view_at) / %s
+                )
+            END
+        )
+        LIMIT %s
+        """
+
+        params = [user.id]
+        if tag_ids:
+            params.append(tuple(tag_ids))
+        params.append(T)
+        params.append(question_num)
+
+        # return list(ReelQuestion.objects.raw(sql, params))
+        reels = list(ReelQuestion.objects.raw(sql, params)) # TODO add serializer for reels
+        return Response(QuestionSerializer(reels, many=True, context={'user_id': user.id}).data)
+    else:
+        return Response(0)
+
+@api_view(['POST'])
+def update_reel_favorite(request):
+    data = request.data
+    reel_id = data.pop('reel_id', None)
+
+    if not reel_id:
+        return Response({'error': 'reel_id is required'}, status=400)
+
+    if _check_user(data):
+        user = get_user(data)
+        reel = ReelQuestion.objects.get(id=reel_id)
+
+        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel=reel)
+        interaction.favorite = not interaction.favorite
+        reel.likes = reel.likes + 1 if interaction.favorite else reel.likes -1
+        
+        reel.save()
+        interaction.save()
+
+        return Response({'status': 'updated'})
+
+    else:
+        return Response({'status': 'unauthorized'}, status=403)
+
+@api_view(['POST'])
+def update_reel_last_view_at(request):
+    data = request.data
+    reel_id = data.pop('reel_id', None)
+
+    if not reel_id:
+        return Response({'error': 'reel_id is required'}, status=400)
+
+    if _check_user(data):
+        user = get_user(data)
+        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel__id=reel_id)
+        interaction.views += 1
+        interaction.last_view_at = timezone.now()
+        interaction.save()
+
+        return Response({'status': 'updated'})
+
+    else:
+        return Response({'status': 'unauthorized'}, status=403)
+
+@api_view(['POST'])
+def update_reel_last_tap_at(request):
+    data = request.data
+    reel_id = data.pop('reel_id', None)
+
+    if not reel_id:
+        return Response({'error': 'reel_id is required'}, status=400)
+
+    if _check_user(data):
+        user = get_user(data)
+        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel__id=reel_id)
+        interaction.taps += 1
+        interaction.last_tap_at = timezone.now()
+        interaction.save()
+
+        return Response({'status': 'updated'})
+
+    else:
+        return Response({'status': 'unauthorized'}, status=403)
 
 @api_view(['POST'])
 def submit_writing_question(request):

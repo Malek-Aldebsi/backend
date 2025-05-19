@@ -7,7 +7,7 @@ from .views import read_headlines, subject_set, headline_set, build_quiz, mark_q
      mark_question, get_shared_question, mark_shared_question, share_quiz, dashboard, get_writing_question, \
      submit_writing_question, add_writing_topic, add_suggested_quiz, suggested_quizzes, take_quiz, edit_user_info, \
      subject_analysis, test, get_saved_question, saved_questions, report, save_question, \
-     reset_questions_level_and_ideal_duration, subjectStatistics, get_admin_suggestions
+     reset_questions_level_and_ideal_duration, subjectStatistics, get_admin_suggestions, get_reels, update_reel_favorite, update_reel_last_tap_at, update_reel_last_view_at
 
 urlpatterns = [
      path('subject_set/', subject_set),
@@ -46,6 +46,10 @@ urlpatterns = [
      path('subject_question_num/', subject_question_num),
      path('subjectStatistics/<int:grade>/<str:subject>', subjectStatistics),
      path('read_headlines/', read_headlines),
+     path('get_reels/', get_reels),
+     path('update_reel_favorite/', update_reel_favorite),
+     path('update_reel_last_view_at/', update_reel_last_view_at),
+     path('update_reel_last_tap_at/', update_reel_last_tap_at),
      path('test/', test),
      ##############################################
      # path('read_user_from_xlsx/', read_user_from_xlsx),

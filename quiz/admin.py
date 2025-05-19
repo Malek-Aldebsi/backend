@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
-from .models import Subject, Module, Lesson, \
+from .models import ReelInteraction, ReelQuestion, Subject, Module, Lesson, \
     AdminAnswer, UserAnswer, AdminFinalAnswer, UserFinalAnswer, AdminMultipleChoiceAnswer, \
     UserMultipleChoiceAnswer, FinalAnswerQuestion, MultipleChoiceQuestion, Solution, AdminQuiz, UserQuiz, Question, \
     HeadLine, H1, LastImageName, Author, HeadLineInst, MultiSectionQuestion, \
@@ -155,5 +155,7 @@ admin.site.register(SavedQuestion, SavedQuestionAdmin)
 admin.site.register(Report, ReportAdmin)
 
 admin.site.register(LastImageName, ExportAllFields)
+admin.site.register(ReelQuestion, ExportAllFields)
+admin.site.register(ReelInteraction, ExportAllFields)
 
 admin.site.register(Packages, PackagesAdmin)
