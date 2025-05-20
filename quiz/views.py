@@ -865,7 +865,7 @@ def saved_questions(request):
 
     if _check_user(data):
         user = get_user(data)
-        _saved_questions = SavedQuestion.objects.filter(user=user)
+        _saved_questions = SavedQuestion.objects.filter(user=user).order_by('-creationDate')
 
         days = {'Sunday': 'الأحد', 'Monday': 'الإثنين', 'Tuesday': 'الثلاثاء', 'Wednesday': 'الأربعاء',
                 'Thursday': 'الخميس', 'Friday': 'الجمعة', 'Saturday': 'السبت'}
@@ -972,7 +972,7 @@ def quiz_history(request):
         days = {'Sunday': 'الأحد', 'Monday': 'الإثنين', 'Tuesday': 'الثلاثاء', 'Wednesday': 'الأربعاء',
                 'Thursday': 'الخميس', 'Friday': 'الجمعة', 'Saturday': 'السبت'}
 
-        quizzes = UserQuiz.objects.filter(user=user)
+        quizzes = UserQuiz.objects.filter(user=user).order_by('-creationDate')
         # if search is not None:
         #     quizzes = quizzes.filter(Q(subject__name__icontains=search) |
         #                              Q(creationDate__date__icontains=search) |
