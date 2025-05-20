@@ -471,7 +471,8 @@ def update_reel_last_view_at(request):
 
     if _check_user(data):
         user = get_user(data)
-        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel__id=reel_id)
+        reel = ReelQuestion.objects.get(id=reel_id)
+        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel=reel)
         interaction.views += 1
         interaction.last_view_at = timezone.now()
         interaction.save()
@@ -491,7 +492,8 @@ def update_reel_last_tap_at(request):
 
     if _check_user(data):
         user = get_user(data)
-        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel__id=reel_id)
+        reel = ReelQuestion.objects.get(id=reel_id)
+        interaction, _ = ReelInteraction.objects.get_or_create(user=user, reel=reel)
         interaction.taps += 1
         interaction.last_tap_at = timezone.now()
         interaction.save()
