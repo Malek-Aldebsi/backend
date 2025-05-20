@@ -135,7 +135,7 @@ def headline_set(request):
 
         modules = Module.objects.filter(parent_subject=subject)
         module_serializer = ModuleSerializer(modules, many=True).data
-        return Response({'modules': module_serializer, 'headlines': headlines})
+        return Response({'modules': module_serializer, 'headlines': headlines, 'max_questions_per_quiz':60})
     else:
         return Response(0)
 
