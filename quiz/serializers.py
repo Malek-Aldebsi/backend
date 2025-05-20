@@ -134,11 +134,10 @@ class ReelQuestionSerializer(serializers.ModelSerializer):
 
     def get_favorite(self, obj):        
         user_id = self.context.get('user_id')
-        
-        return ReelInteraction.objects.get(
-            user__id=user_id,
-            reel=obj
-        ).favorite
+        interaction = ReelInteraction.objects.filter(user__id=user_id,reel=obj)
+        if interaction.exists():
+            return interaction.favorite()
+        return False
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
     correct_answer = AdminMultipleChoiceAnswerSerializer(many=False)
