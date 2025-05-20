@@ -135,7 +135,7 @@ class ReelQuestionSerializer(serializers.ModelSerializer):
     def get_favorite(self, obj):        
         user_id = self.context.get('user_id')
         
-        return ReelInteraction.objects.filter(
+        return ReelInteraction.objects.get(
             user__id=user_id,
             reel=obj
         ).favorite
