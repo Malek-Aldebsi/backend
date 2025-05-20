@@ -28,7 +28,7 @@ def signupAsAnonymous():
         lastName=User.objects.count()+1,
         phone=None,
         password=None,
-        grade=None,
+        grade=11,
         age=None,
         school_name=None,
         listenFrom=None,
