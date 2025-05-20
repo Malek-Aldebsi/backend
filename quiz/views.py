@@ -381,7 +381,7 @@ def get_writing_question(request):
 
 
 @api_view(['POST'])
-def get_reels(request): # random.choice
+def get_reels(request):
     data = request.data
     semester = data.pop('semester', None)
     subject_id = data.pop('subject', None)

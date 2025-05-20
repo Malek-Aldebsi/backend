@@ -2,7 +2,7 @@ from datetime import timedelta
 import datetime
 from django.db.models import Sum
 from rest_framework import serializers
-from .models import ReelInteraction, SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
+from .models import ReelInteraction, ReelQuestion, SavedQuestion, Subject, Tag, Module, Lesson, Question, FinalAnswerQuestion, MultipleChoiceQuestion, \
     AdminMultipleChoiceAnswer, H1, UserAnswer, AdminFinalAnswer, UserFinalAnswer, UserMultipleChoiceAnswer, UserQuiz, \
     MultiSectionQuestion, UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz
 
@@ -111,7 +111,7 @@ class ReelQuestionSerializer(serializers.ModelSerializer):
     favorite = serializers.SerializerMethodField()
 
     class Meta:
-        model = FinalAnswerQuestion
+        model = ReelQuestion
         fields = ['id', 'body', 'image', 'level', 'author', 'subject', 'lesson', 'idealDuration', 'hint', 'correct_answer', 'type', 'likes', 'favorite']
 
     def get_author(self, obj):
