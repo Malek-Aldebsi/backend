@@ -391,7 +391,7 @@ def get_reels(request):
         decay_days = 60 # after this number we suggest the reel not seen by the user even if he see it before    
         question_num = 20        
         
-        subject = Subject.objects.filter(id=subject_id)
+        subject = Subject.objects.get(id=subject_id)
         tag_ids = [headline.id for headline in subject.get_all_headlines(semester)]
 
         # Sample n ReelQuestion objects with any of tag_ids where sampling probability ∝ time since last view.    
