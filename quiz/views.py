@@ -381,7 +381,7 @@ def get_writing_question(request):
 
 
 @api_view(['POST'])
-def get_reels(request):
+def get_reels(request): # random.choice
     data = request.data
     semester = data.pop('semester', None)
     subject_id = data.pop('subject', None)
@@ -392,7 +392,8 @@ def get_reels(request):
         question_num = 20        
         
         subject = Subject.objects.get(id=subject_id)
-        tag_ids = [headline.id for headline in subject.get_all_headlines(semester)]
+        modules = Module.objects.filter(parent_subject=subject, semester=semester)
+        tag_ids = [lesson.id for lesson in Lesson.objects.filter(parent_module__in=modules)]
 
         # Sample n ReelQuestion objects with any of tag_ids where sampling probability ∝ time since last view.    
         T = decay_days * 86400  # decay period in seconds
@@ -1851,9 +1852,9 @@ def test(request):
 
 @api_view(['POST'])
 def read_headlines(request):
-    df = pd.read_excel(r'F:\kawkab\backend\database\English_2025.xlsx') # TODO
-    sub = Subject.objects.get(name='اللغة الإنجليزية', grade=11) # TODO
-    semester = 1 # TODO
+    df = pd.read_excel(r'F:\kawkab\backend\database\Den_2_2025.xlsx') # TODO
+    sub = Subject.objects.get(name='التربية الإسلامية', grade=11) # TODO
+    semester = 2 # TODO
     
     mod_order = 1
     les_order = 1
