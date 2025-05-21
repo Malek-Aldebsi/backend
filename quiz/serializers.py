@@ -136,7 +136,7 @@ class ReelQuestionSerializer(serializers.ModelSerializer):
         user_id = self.context.get('user_id')
         interaction = ReelInteraction.objects.filter(user__id=user_id,reel=obj)
         if interaction.exists():
-            return interaction.favorite
+            return interaction.first().favorite
         return False
 
 class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
