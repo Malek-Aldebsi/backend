@@ -753,13 +753,6 @@ def similar_questions(request):
         questions = questions[:10]
 
     serializer = QuestionSerializer(questions, many=True) # TODO add the user id to get saved field
-    if is_single_question:
-        tag = questions[0].tags.exclude(headbase=None).first().headbase
-        while hasattr(tag, 'headline'):
-            tag = tag.headline.parent_headline
-        subject = {'name': str(tag.h1.parent_lesson.parent_module.parent_subject.name), 'id': str(tag.h1.parent_lesson.parent_module.parent_subject.id)}
-        return Response({'questions': serializer.data, 'subject': subject})
-
     return Response(serializer.data)
 # {
 #         "questions_id": ["000c37e8-0635-49a7-9e94-2cfcc57602e8"],
@@ -1854,11 +1847,11 @@ def test(request):
 
 @api_view(['POST'])
 def read_headlines(request):
-    df = pd.read_excel(r'F:\kawkab\backend\database\Den_2_2025.xlsx') # TODO
-    sub = Subject.objects.get(name='التربية الإسلامية', grade=11) # TODO
+    df = pd.read_excel(r'F:\kawkab\backend\database\Hi_2_2025.xlsx') # TODO
+    sub = Subject.objects.get(name='التاريخ', grade=11) # TODO
     semester = 2 # TODO
     
-    mod_order = 1
+    mod_order = 4
     les_order = 1
     h1_order = 1
     h2_order = 1
@@ -1890,7 +1883,6 @@ def read_headlines(request):
 
         les, _ = Lesson.objects.get_or_create(name=str(row['lesson']).strip(), parent_module=mod)
         if _:
-            print(les.name)
             les.order = les_order
             les.save()
         if les.name != pre_les:
@@ -1901,7 +1893,6 @@ def read_headlines(request):
         if str(row['h1']) != 'nan':
             h1, _ = H1.objects.get_or_create(name=str(row['h1']).strip(), parent_lesson=les)
             if _:
-                print(h1.name)
                 h1.order = h1_order
                 h1.save()
             if h1.name != pre_h1:
@@ -1914,7 +1905,6 @@ def read_headlines(request):
                 h2.level=2
                 h2.save()
                 if _:
-                    print(h2.name)
                     h2.order = h2_order
                     h2.save()
                 if h2.name != pre_h2:
@@ -1926,7 +1916,6 @@ def read_headlines(request):
                     h3.level=3
                     h3.save()
                     if _:
-                        print(h3.name)
                         h3.order = h3_order
                         h3.save()
                     if h3.name != pre_h3:
@@ -1938,7 +1927,6 @@ def read_headlines(request):
                         h4.level=4
                         h4.save()
                         if _:
-                            print(h4.name)
                             h4.order = h4_order
                             h4.save()
                         if h4.name != pre_h4:
@@ -1949,7 +1937,6 @@ def read_headlines(request):
                             h5.level=5
                             h5.save()
                             if _:
-                                print(h5.name)
                                 h5.order = h5_order
                                 h5.save()
                             if h5.name != pre_h5:
@@ -1957,6 +1944,42 @@ def read_headlines(request):
                                 h5_order += 1
     print('Done')
     return Response()
+
+# @api_view(['GET'])
+# def read_multiple_choice_question_from_xlsx(request):
+#     df = pd.read_excel(r'F:\kawkab\backend\database\multiple_choice_question.xlsx')
+
+#     for index, row in df.iterrows():
+#         if str(row['tags']) == 'nan' or str(row['choices']) == 'nan':
+#             continue
+#         tags = Tag.objects.filter(id__in=row['tags'].split(','))
+#         choices = AdminMultipleChoiceAnswer.objects.filter(id__in=row['choices'].split(','))
+#         correct_answer = AdminMultipleChoiceAnswer.objects.get(id=row['correct_answer'])
+#         creationDate = parse_datetime(row['creationDate'])
+#         multiple_choice_question, _ = MultipleChoiceQuestion.objects.get_or_create(
+#             id=row['id'] if str(row['id']) != 'nan' else None, sub=row['sub'] if str(row['sub']) != 'nan' else None,
+#             body=row['body'] if str(row['body']) != 'nan' else None,
+#             idealDuration=parse_duration(row['idealDuration']) if str(row['idealDuration']) != 'nan' else None,
+#             hint=row['hint'] if str(row['hint']) != 'nan' else None, correct_answer=correct_answer)
+#         multiple_choice_question.creationDate = creationDate
+#         for tag in tags:
+#             multiple_choice_question.tags.add(tag)
+
+#         for choice in choices:
+#             multiple_choice_question.choices.add(choice)
+
+#         if str(row['image']) != 'nan':
+#             local_file = open(fr'F:\kawkab\backend\database\images\{row["image"]}', "rb")
+#             django_file = File(local_file)
+#             img_name = LastImageName.objects.first()
+#             multiple_choice_question.image.save(f'{img_name.name}.png', django_file)
+#             img_name.name += 1
+#             img_name.save()
+#             local_file.close()
+#         multiple_choice_question.save()
+
+#     return Response()
+
 
 # @api_view(['POST'])
 # def randomize_choice_order(request):
