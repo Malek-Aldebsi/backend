@@ -12,4 +12,4 @@ class UserSerializer(serializers.ModelSerializer):
 class AdSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ad
-        fields = ['name', 'image']
+        fields = ['name', 'image', 'external_link']

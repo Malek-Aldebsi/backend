@@ -71,6 +71,7 @@ class Quote(models.Model):
 class Ad(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(storage=MediaRootS3Boto3Storage(), null=True, blank=True)
+    external_link = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=False, null=True)
     creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
