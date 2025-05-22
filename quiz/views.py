@@ -1833,7 +1833,7 @@ def test(request):
     data = request.data
     if _check_user(data):
         user = get_user(data)
-    q = MultiSectionQuestion.objects.all()
+    q = set(MultiSectionQuestion.objects.all()[:5]) | set(MultipleChoiceQuestion.objects.all()[0:5])
     return Response(QuestionSerializer(q, many=True, context={'user_id': user.id}).data)
 
 @api_view(['POST'])
