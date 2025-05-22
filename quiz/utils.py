@@ -65,7 +65,6 @@ def mark_multi_section_question(quiz, ques, ans, correct_questions, ideal_durati
     answer = UserMultiSectionAnswer.objects.create(duration=datetime.timedelta(seconds=ans['duration']),
                                                    question=ques, quiz=quiz)
     question_status = []
-
     for sub_question in ques.multisectionquestion.sub_questions.all():
         if hasattr(sub_question, 'finalanswerquestion'):
             sub_answer = mark_final_answer_question(None, sub_question, {'duration': 0, 'answer': ans.get('answer', {}).get(str(sub_question.id), None)},

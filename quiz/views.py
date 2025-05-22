@@ -264,7 +264,7 @@ def build_quiz(request):
             for h1_id, weight in h1_weights.items()
         }    
 
-    def fetch_questions(user, packages, h1_weights, question_num, is_mobile):
+    def fetch_questions(user, packages, h1_weights, question_num):
         manual_weights = {}
         for h1_id, weight in h1_weights.items():
             try:
@@ -305,8 +305,8 @@ def build_quiz(request):
 
         # Build base query
         query = Q(tags__in=list(itertools.chain.from_iterable(list(manual_weights.keys())))) & Q(sub=False) #& Q(packages__in=packages) & Q(level__gt=level) & Q(level__lt=level) same for author
-        if is_mobile:
-            query &= Q(multiplechoicequestion__isnull=False)
+        # if is_mobile:
+        #     query &= Q(multiplechoicequestion__isnull=False)
 
         # Annotate each Question with the max adjusted weight among its tags
         questions = Question.objects.filter(query).annotate(
@@ -323,7 +323,6 @@ def build_quiz(request):
     question_num = data.pop('question_num', None)
     quiz_level = data.pop('quiz_level', None)
     subject = data.pop('subject', None)
-    phone = data.pop('phone', False)
 
     if _check_user(data):
         user = get_user(data)
@@ -355,7 +354,6 @@ def build_quiz(request):
             packages=account.pkg_list.all(),
             h1_weights=h1_weights,
             question_num=question_num,
-            is_mobile=phone
         )
         return Response(questions)
     else:
@@ -717,7 +715,6 @@ def similar_questions(request):
     by_headlines = data.pop('by_headlines', False)
     by_author = data.pop('by_author', False)
     by_level = data.pop('by_level', False)
-    phone = data.pop('phone', False)
 
     question_weight = {}
 
@@ -744,11 +741,7 @@ def similar_questions(request):
 
     questions = []
     for question_id in sorted_question[:len(question_set)] if not is_single_question else sorted_question:
-        if phone:
-            if hasattr(Question.objects.get(id=question_id), 'multiplechoicequestion'):
-                questions.append(Question.objects.get(id=question_id))
-        else:
-            questions.append(Question.objects.get(id=question_id))
+        questions.append(Question.objects.get(id=question_id))
     if len(questions) > 10:
         questions = questions[:10]
 
@@ -1837,13 +1830,11 @@ def create_pkg(request):
 
 @api_view(['POST'])
 def test(request):
-    print('started')
-    for index, h1 in enumerate(H1.objects.all()):
-        if index%20==0:
-            print(index)
-        h1.fa_lesson = Lesson.objects.get(id=h1.parent_lesson.id)
-        h1.save()
-    return Response(1)
+    data = request.data
+    if _check_user(data):
+        user = get_user(data)
+    q = MultiSectionQuestion.objects.all()
+    return Response(QuestionSerializer(q, many=True, context={'user_id': user.id}).data)
 
 @api_view(['POST'])
 def read_headlines(request):
