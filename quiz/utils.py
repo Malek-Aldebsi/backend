@@ -73,7 +73,6 @@ def mark_multi_section_question(quiz, ques, ans, correct_questions, ideal_durati
             question_status.append(sub_answer == sub_question.finalanswerquestion.correct_answer)
 
         elif hasattr(sub_question, 'multiplechoicequestion'):
-            print(ans)
             sub_answer = mark_multiple_choice_question(None, sub_question,
                                                        {'duration': 0, 'answer': ans.get('answer', {}).get(str(sub_question.id), None) if ans['answer'] else None},
                                                        correct_questions, ideal_duration, attempt_duration, modules,

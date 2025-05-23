@@ -860,8 +860,11 @@ def saved_questions(request):
         for saved_question in _saved_questions:
             date = saved_question.creationDate.strftime('%I:%M %p • %d/%m/%Y • %A')
             date = date[:24] + days[date[24:]]
-
-            subject = saved_question.question.tags.exclude(headbase__h1=None).first().headbase.h1.parent_lesson.parent_module.parent_subject
+            
+            tag = saved_question.question.tags.exclude(headbase=None).first().headbase
+            while hasattr(tag, 'headline'):
+                tag = tag.headline.parent_headline
+            subject = tag.h1.parent_lesson.parent_module.parent_subject
             subject = {'id': subject.id, 'name': subject.name}
 
             body = saved_question.question.body

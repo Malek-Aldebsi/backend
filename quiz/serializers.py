@@ -79,7 +79,7 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
         return obj.tags.exclude(author=None).first().author.name
 
     def get_headlines(self, obj):
-        tags = obj.tags.exclude(headbase=None).all()
+        tags = obj.tags.exclude(headbase=None)
         headlines = []
         for tag in tags:
             headbase = tag.headbase

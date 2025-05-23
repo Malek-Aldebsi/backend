@@ -315,7 +315,6 @@ class SavedQuestion(models.Model):
     def __str__(self):
         return f'{self.user} --{self.creationDate}'
 
-
 class Report(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     user = models.ForeignKey(User, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
