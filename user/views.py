@@ -1,6 +1,7 @@
 from datetime import date, timedelta, time
 
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db.models.functions import Trunc
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -134,19 +135,24 @@ def sign_up(request):
 @api_view(['POST'])
 def update_user_info(request):
     data = request.data
-    user, created = User.objects.update_or_create(
-        id=data['id'],
-        defaults={
-            'firstName': data['firstName'],
-            'lastName': data['lastName'],
-            'phone': data['phone'],
-            'password': data['password'],
-            'grade': 11,
-            'anonymous': False,
+    try:
+        user, created = User.objects.update_or_create(
+            id=data['id'],
+            defaults={
+                'firstName': data['firstName'],
+                'lastName': data['lastName'],
+                'phone': data['phone'],
+                'password': data['password'],
+                'grade': 11,
+                'anonymous': False,
             }
-    )
-    return Response({'status': 'success'})
-
+        )
+        return Response({'status': 'success'})
+    except IntegrityError as e:
+        return Response(
+            {'status': 'used phone'},
+        )
+    
 @api_view(['POST'])
 def log_in(request):
     data = request.data

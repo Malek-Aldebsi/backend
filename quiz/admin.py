@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
-from .models import ReelInteraction, ReelQuestion, Subject, Module, Lesson, \
+from .models import PackageActivationCode, ReelInteraction, ReelQuestion, Subject, Module, Lesson, \
     AdminAnswer, UserAnswer, AdminFinalAnswer, UserFinalAnswer, AdminMultipleChoiceAnswer, \
     UserMultipleChoiceAnswer, FinalAnswerQuestion, MultipleChoiceQuestion, Solution, AdminQuiz, UserQuiz, Question, \
     HeadLine, H1, LastImageName, Author, HeadLineInst, MultiSectionQuestion, \
@@ -45,6 +45,17 @@ class AdminMultipleChoiceAnswerAdmin(admin.ModelAdmin):
 class SubjectAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'grade']
     ordering = ('grade',)
+
+
+class PackageActivationCodeAdmin(ExportActionMixin, admin.ModelAdmin):
+    search_fields = ['id', 'creation_date', 'code', 'user__id', 'used_date']
+    list_display = ('id', 'creation_date', 'code', 'user', 'packages', 'used_date')
+    def packages(self, obj):
+        pkgs_set = ''
+        for pkg in obj.pkgs.all():
+            pkgs_set += pkg.name + ', '
+        return pkgs_set[:-2]
+    ordering = ('-creation_date',)
 
 
 class ModuleAdmin(ExportActionMixin, admin.ModelAdmin):
@@ -159,3 +170,4 @@ admin.site.register(ReelQuestion, ExportAllFields)
 admin.site.register(ReelInteraction, ExportAllFields)
 
 admin.site.register(Packages, PackagesAdmin)
+admin.site.register(PackageActivationCode, PackageActivationCodeAdmin)
