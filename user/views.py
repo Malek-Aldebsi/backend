@@ -145,18 +145,18 @@ def update_user_info(request):
             'anonymous': False,
             }
     )
-    return Response(1)
+    return Response({'status': 'success'})
 
 @api_view(['POST'])
 def log_in(request):
     # 0-->logged_in  1-->password_are_wrong  2-->phone_not_exist
     data = request.data
     if User.objects.get(id=data['id'], phone=data['phone'], password=data['password']).exist():
-        return Response(0)
+        return Response({'status': 'success'})
     elif User.objects.get(id=data['id'], phone=data['phone']).exist():
-        return Response(1)
+        return Response({'status': 'wrong pass'})
     else:
-        return Response(2)
+        return Response({'status': 'phone not exist'})
 
 @api_view(['POST'])
 def check_user(request):
