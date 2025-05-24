@@ -131,6 +131,32 @@ def sign_up(request):
 #     "grade": 8
 # }
 
+@api_view(['POST'])
+def update_user_info(request):
+    data = request.data
+    user, created = User.objects.update_or_create(
+        id=data['id'],
+        defaults={
+            'firstName': data['firstName'],
+            'lastName': data['lastName'],
+            'phone': data['phone'],
+            'password': data['password'],
+            'grade': 11,
+            'anonymous': False,
+            }
+    )
+    return Response(1)
+
+@api_view(['POST'])
+def log_in(request):
+    # 0-->logged_in  1-->password_are_wrong  2-->phone_not_exist
+    data = request.data
+    if User.objects.get(id=data['id'], phone=data['phone'], password=data['password']).exist():
+        return Response(0)
+    elif User.objects.get(id=data['id'], phone=data['phone']).exist():
+        return Response(1)
+    else:
+        return Response(2)
 
 @api_view(['POST'])
 def check_user(request):
@@ -147,22 +173,6 @@ def check_admin(request):
     # true-->exits  false-->not exits
     data = request.data
     return Response(_check_admin(data))
-
-# @api_view(['POST'])
-# def log_in(request):
-#     # 0-->logged_in  1-->password_are_wrong  2-->email_or_phone_not_exist
-#     data = request.data
-#     return Response(login(data))
-# {
-#     "email": "malek315@gmail.com",
-#     "password": "password"
-# }
-# or
-# {
-#     "phone": "0786636678",
-#     "password": "password"
-# }
-
 
 # @api_view(['POST'])
 # def dashboard(request):
