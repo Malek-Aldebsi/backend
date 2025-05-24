@@ -90,6 +90,9 @@ def dashboard(request):
 
 @api_view(['POST'])
 def app_flags(request):
+    data = request.data
+    if _check_user(data):
+        user = get_user(data)
     return Response({'app_version': 0.0})
 
 @api_view(['POST'])
