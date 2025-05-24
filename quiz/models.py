@@ -1,4 +1,6 @@
 from datetime import timedelta
+import random
+import string
 
 from django.db import models
 import uuid
@@ -377,3 +379,24 @@ class Packages(models.Model):
 
     def __str__(self):
         return self.name
+
+def generate_random_code(length=10):
+        return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+class PackageActivationCode(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    creation_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    code = models.CharField(max_length=100, unique=True, editable=False)
+    user = models.ForeignKey(User, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    pkgs = models.ManyToManyField(Packages, symmetrical=False, blank=True)
+    used_date = models.DateTimeField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            while True:
+                code = generate_random_code()
+                if not PackageActivationCode.objects.filter(code=code).exists():
+                    self.code = code
+                    break
+        super().save(*args, **kwargs)

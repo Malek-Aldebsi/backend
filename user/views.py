@@ -5,15 +5,15 @@ from django.db.models.functions import Trunc
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from quiz.models import Subject, UserQuiz
+from quiz.models import PackageActivationCode, Packages, Subject, UserQuiz
 from school import settings
-from user.models import Quote, Ad, User
+from user.models import Account, Quote, Ad, User
 from user.serializers import AdSerializer
-from user.utils import signup, _check_user, _check_admin, signupAsAnonymous
+from user.utils import get_user, signup, _check_user, _check_admin, signupAsAnonymous
 
 from django.shortcuts import render
 from django.db.models import Count, Max, Avg
-
+from django.utils import timezone
 
 ######################################################################
 @api_view(['POST'])
@@ -149,16 +149,39 @@ def update_user_info(request):
 
 @api_view(['POST'])
 def log_in(request):
-    # 0-->logged_in  1-->password_are_wrong  2-->phone_not_exist
     data = request.data
-    user = User.objects.filter(id=data['id'], phone=data['phone'], password=data['password'])
-    if user.exist():
-        return Response({'status': 'success', 'user_name': user.first().firstName})
-    elif User.objects.get(id=data['id'], phone=data['phone']).exist():
+    user = User.objects.filter(phone=data['phone'], password=data['password'])
+    if user.exists():
+        return Response({'status': 'success', 'user_id':user.first().id, 'user_name': user.first().firstName})
+    elif User.objects.get(id=data['id'], phone=data['phone']).exists():
         return Response({'status': 'wrong pass'})
     else:
         return Response({'status': 'phone not exist'})
 
+@api_view(['POST'])
+def activate_package(request):
+    data = request.data
+    pkg_code = data.pop('pkg_code', None)
+    if _check_user(data):
+        user = get_user(data)
+        card = PackageActivationCode.objects.filter(code=pkg_code)
+        
+        if not card.exists():
+            return Response({'status': 'unavailable'})
+        elif card.first().user is not None:
+            return Response({'status': 'pre-used'})
+        else:
+            card = card.first()
+            card.user = user
+            card.used_date = timezone.now()
+            card.save()
+
+            user_account = Account.objects.get(user=user)
+            user_account.pkg_list.add(*card.pkgs.all())            
+            return Response({'status': 'success'})
+    else:
+        return Response({'status': 'unauthorized'})
+    
 @api_view(['POST'])
 def check_user(request):
     # true-->exits  false-->not exits
@@ -175,6 +198,7 @@ def check_admin(request):
     data = request.data
     return Response(_check_admin(data))
 
+
 # @api_view(['POST'])
 # def dashboard(request):
 #     data = request.data
@@ -183,17 +207,6 @@ def check_admin(request):
 #         user = get_user(data)
 #
 #         quote = Quote.objects.order_by('creationDate').first().image.url
-#
-#         _ads = Ad.objects.filter(active=True)
-#         ads_serializer = AdSerializer(_ads, many=True)
-#
-#         # _ads = Ad.objects.order_by('creationDate').filter(active=True)
-#         # ads = []
-#         # for ad in _ads:
-#         #     ads.append(ad.image.url)
-#
-#         today_date = date.today()
-#         formated_date = today_date.strftime("%d-%m-%Y")
 #
 #         tasks = DailyTask.objects.filter(user=user, date=today_date)
 #         task_serializer = DailyTaskSerializer(tasks, many=True)
