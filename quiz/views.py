@@ -136,12 +136,15 @@ def headline_set(request):
     subject_id = data.pop('subject_id', None)
 
     if _check_user(data):
+        user = get_user(data)
         subject = Subject.objects.get(id=subject_id)
         headlines = subject.get_main_headlines().values('id', 'name')
 
         modules = Module.objects.filter(parent_subject=subject)
         module_serializer = ModuleSerializer(modules, many=True).data
-        return Response({'modules': module_serializer, 'headlines': headlines, 'max_questions_per_quiz':60.0})
+
+        user_account = Account.objects.get(user=user)
+        return Response({'modules': module_serializer, 'headlines': headlines, 'activate_first_semester': user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists(), 'activate_second_semester': user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists(), 'max_questions_per_quiz':60.0})
     else:
         return Response(0)
 
