@@ -41,7 +41,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        fields = ['name', 'lessons', 'semester']
+        fields = ['name', 'lessons', 'semester', 'order']
 
 
 class AdminFinalAnswerSerializer(serializers.ModelSerializer):
