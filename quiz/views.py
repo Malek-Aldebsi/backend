@@ -1952,7 +1952,7 @@ def read_headlines(request):
 @api_view(['POST'])
 def read_multiple_choice_question_from_xlsx(request):
     data = request.data
-    df = pd.read_excel(os.path.join(settings.DATABASE_FILES_DIR, 'questions.xlsx'))
+    df = pd.read_excel(os.path.join(settings.DATABASE_FILES_DIR, 'x.xlsx')) # the file should saved in database folder
     # question	correct choice	choice 2	choice 3	choice 4	headline	lesson
     print('started')
     # ids = Subject.objects
@@ -1966,8 +1966,8 @@ def read_multiple_choice_question_from_xlsx(request):
     hs = set(h1s) | set(h2s) | set(h3s) | set(h4s) | set(h5s)
     for index, row in df.iterrows():
         # if index > data['min'] and index < data['max']:    
-            if index%20==0:
-                print(index)
+            # if index%20==0:
+            print(index)
             orders = [1, 2, 3, 4]
             author = Author.objects.get(id="db6da5f3-05a2-45d1-bb11-c5f8b63890c9") # فريقنا
             # tags = H1.objects.filter(name__in=row['headline'].split('|||'), parent_lesson__name=row['lesson'])
@@ -2010,10 +2010,38 @@ def read_multiple_choice_question_from_xlsx(request):
     print('end')
     return Response('Done')
 
+# question	answer	lesson
+@api_view(['POST'])
+def read_reels_question_from_xlsx(request):
+    data = request.data
+    df = pd.read_excel(os.path.join(settings.DATABASE_FILES_DIR, data['file'])) # the file should saved in database folder
+    print('started')
+    # ids = Subject.objects
+    for index, row in df.iterrows():
+        if index > data['min'] and index < data['max']:    
+            if index%50==0:
+                print(index)
+            
+            author = Author.objects.get(id="db6da5f3-05a2-45d1-bb11-c5f8b63890c9") # فريقنا
+            try:
+                lesson = Lesson.objects.get(name=row['lesson'])
+            except:
+                print(row['question'])
+                continue
+            
+            correct_answer = AdminFinalAnswer.objects.create(body=row['answer'])
+            
+            reel = ReelQuestion.objects.create(body=row['question'], correct_answer=correct_answer)
+            # for tag in tags:
+            #     multiple_choice_question.tags.add(tag)
+            reel.tags.add(lesson)
+            reel.tags.add(author)
 
-"""
-270
-"""
+            reel.save()
+    print('end')
+    return Response('Done')
+
+
 # @api_view(['POST'])
 # def randomize_choice_order(request):
     # import random
