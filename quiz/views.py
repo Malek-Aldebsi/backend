@@ -1964,7 +1964,6 @@ def read_multiple_choice_question_from_xlsx(request):
     h5s = HeadLine.objects.filter(parent_headline__in=h4s).values_list('id', flat=True)
     hs = set(h1s) | set(h2s) | set(h3s) | set(h4s) | set(h5s)
     for index, row in df.iterrows():
-            if index!=0:
                 if index%30==0:
                     print(index)
                 orders = [1, 2, 3, 4]
