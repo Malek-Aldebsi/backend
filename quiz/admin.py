@@ -140,6 +140,7 @@ class PackagesAdmin(ExportActionMixin, admin.ModelAdmin):
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(MultipleChoiceQuestion, QuestionAdmin)
 admin.site.register(FinalAnswerQuestion, QuestionAdmin)
+admin.site.register(ReelQuestion, QuestionAdmin)
 admin.site.register(MultiSectionQuestion, QuestionAdmin)
 admin.site.register(WritingQuestion, QuestionAdmin)
 
@@ -166,7 +167,6 @@ admin.site.register(SavedQuestion, SavedQuestionAdmin)
 admin.site.register(Report, ReportAdmin)
 
 admin.site.register(LastImageName, ExportAllFields)
-admin.site.register(ReelQuestion, ExportAllFields)
 admin.site.register(ReelInteraction, ExportAllFields)
 
 admin.site.register(Packages, PackagesAdmin)
