@@ -1949,7 +1949,6 @@ def read_headlines(request):
     print('Done')
     return Response()
 
-
 @api_view(['POST'])
 def read_multiple_choice_question_from_xlsx(request):
     data = request.data
@@ -1957,22 +1956,21 @@ def read_multiple_choice_question_from_xlsx(request):
     # question	correct choice	choice 2	choice 3	choice 4	headline	lesson
     print('started')
     # ids = Subject.objects
+    modules = Module.objects.filter(parent_subject__name='اللغة الإنجليزية', parent_subject__grade=11, semester=1)
+    lessons = Lesson.objects.filter(parent_module__in=modules)
+    h1s = H1.objects.filter(parent_lesson__in=lessons).values_list('id', flat=True)
+    h2s = HeadLine.objects.filter(parent_headline__in=h1s).values_list('id', flat=True)
+    h3s = HeadLine.objects.filter(parent_headline__in=h2s).values_list('id', flat=True)
+    h4s = HeadLine.objects.filter(parent_headline__in=h3s).values_list('id', flat=True)
+    h5s = HeadLine.objects.filter(parent_headline__in=h4s).values_list('id', flat=True)
+    hs = set(h1s) | set(h2s) | set(h3s) | set(h4s) | set(h5s)
     for index, row in df.iterrows():
-        if index > data['min'] and index < data['max']:    
-            if index%50==0:
+        # if index > data['min'] and index < data['max']:    
+            if index%20==0:
                 print(index)
             orders = [1, 2, 3, 4]
             author = Author.objects.get(id="db6da5f3-05a2-45d1-bb11-c5f8b63890c9") # فريقنا
             # tags = H1.objects.filter(name__in=row['headline'].split('|||'), parent_lesson__name=row['lesson'])
-            modules = Module.objects.filter(parent_subject__name='التاريخ', parent_subject__grade=11, semester=1, order=row['module'])
-            lessons = Lesson.objects.filter(parent_module__in=modules, order=row['lesson'])
-            h1s = H1.objects.filter(parent_lesson__in=lessons).values_list('id', flat=True)
-            h2s = HeadLine.objects.filter(parent_headline__in=h1s).values_list('id', flat=True)
-            h3s = HeadLine.objects.filter(parent_headline__in=h2s).values_list('id', flat=True)
-            h4s = HeadLine.objects.filter(parent_headline__in=h3s).values_list('id', flat=True)
-            h5s = HeadLine.objects.filter(parent_headline__in=h4s).values_list('id', flat=True)
-            hs = set(h1s) | set(h2s) | set(h3s) | set(h4s) | set(h5s)
-            
             try:
                 tag = H1.objects.get(name=row['headline'], id__in=hs)
             except:
