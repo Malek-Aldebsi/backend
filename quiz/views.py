@@ -2010,6 +2010,9 @@ def read_multiple_choice_question_from_xlsx(request):
     return Response('Done')
 
 
+"""
+270
+"""
 # @api_view(['POST'])
 # def randomize_choice_order(request):
     # import random
