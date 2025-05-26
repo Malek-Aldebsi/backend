@@ -1,5 +1,6 @@
 import base64
 from collections import defaultdict
+import os
 from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from rest_framework.decorators import api_view
@@ -1950,7 +1951,7 @@ def read_headlines(request):
 
 @api_view(['GET'])
 def read_multiple_choice_question_from_xlsx(request):
-    df = pd.read_excel(r'database\questions.xlsx')
+    df = pd.read_excel(os.path.join(settings.DATABASE_FILES_DIR, 'questions.xlsx'))
     # question	correct choice	choice 2	choice 3	choice 4	headline	lesson
     print('started')
     # ids = Subject.objects
