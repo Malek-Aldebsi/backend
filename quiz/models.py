@@ -32,7 +32,7 @@ class Subject(Tag):
     def get_all_headlines(self, semester=None):
         modules = Module.objects.filter(parent_subject=self)
         if semester is not None:
-            modules.filter(semester=semester)
+            modules = modules.filter(semester=semester)
         lessons = Lesson.objects.filter(parent_module__in=modules)
         h1s = H1.objects.filter(parent_lesson__in=lessons)
         h2s = HeadLine.objects.filter(parent_headline__in=h1s)

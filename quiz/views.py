@@ -1850,7 +1850,7 @@ def test(request):
 
 @api_view(['POST'])
 def read_headlines(request):
-    df = pd.read_excel(r'F:\kawkab\backend\database\Hi_2_2025.xlsx') # TODO
+    df = pd.read_excel(r'F:\kawkab\backend\database\Hry_2_2025.xlsx') # TODO
     sub = Subject.objects.get(name='التاريخ', grade=11) # TODO
     semester = 2 # TODO
     
@@ -1948,40 +1948,65 @@ def read_headlines(request):
     print('Done')
     return Response()
 
-# @api_view(['GET'])
-# def read_multiple_choice_question_from_xlsx(request):
-#     df = pd.read_excel(r'F:\kawkab\backend\database\multiple_choice_question.xlsx')
+@api_view(['GET'])
+def read_multiple_choice_question_from_xlsx(request):
+    df = pd.read_excel(r'database\questions.xlsx')
+    # question	correct choice	choice 2	choice 3	choice 4	headline	lesson
+    print('started')
+    # ids = Subject.objects
+    modules = Module.objects.filter(parent_subject__name='اللغة الإنجليزية', parent_subject__grade=11, semester=1)
+    lessons = Lesson.objects.filter(parent_module__in=modules)
+    h1s = H1.objects.filter(parent_lesson__in=lessons).values_list('id', flat=True)
+    h2s = HeadLine.objects.filter(parent_headline__in=h1s).values_list('id', flat=True)
+    h3s = HeadLine.objects.filter(parent_headline__in=h2s).values_list('id', flat=True)
+    h4s = HeadLine.objects.filter(parent_headline__in=h3s).values_list('id', flat=True)
+    h5s = HeadLine.objects.filter(parent_headline__in=h4s).values_list('id', flat=True)
+    hs = set(h1s) | set(h2s) | set(h3s) | set(h4s) | set(h5s)
+    for index, row in df.iterrows():
+            if index!=0:
+                if index%30==0:
+                    print(index)
+                orders = [1, 2, 3, 4]
+                author = Author.objects.get(id="db6da5f3-05a2-45d1-bb11-c5f8b63890c9") # فريقنا
+                # tags = H1.objects.filter(name__in=row['headline'].split('|||'), parent_lesson__name=row['lesson'])
+                try:
+                    tag = H1.objects.get(name=row['headline'], id__in=hs)
+                except:
+                    try:
+                        tag = HeadLine.objects.get(name=row['headline'], id__in=hs)
+                    except:
+                        print(row['question'])
+                        continue
+                choice = random.choice(orders)
+                orders.remove(choice)
+                correct_answer = AdminMultipleChoiceAnswer.objects.create(body=row['correct choice'], order=choice)
+                
+                choice = random.choice(orders)
+                orders.remove(choice)
+                choice_2 = AdminMultipleChoiceAnswer.objects.create(body=row['choice 2'], order=choice)
+                
+                choice = random.choice(orders)
+                orders.remove(choice)
+                choice_3 = AdminMultipleChoiceAnswer.objects.create(body=row['choice 3'], order=choice)
+                
+                choice = random.choice(orders)
+                orders.remove(choice)
+                choice_4 = AdminMultipleChoiceAnswer.objects.create(body=row['choice 4'], order=choice)
+                
+                multiple_choice_question= MultipleChoiceQuestion.objects.create(body=row['question'], correct_answer=correct_answer)
+                # for tag in tags:
+                #     multiple_choice_question.tags.add(tag)
+                multiple_choice_question.tags.add(tag)
+                multiple_choice_question.tags.add(author)
 
-#     for index, row in df.iterrows():
-#         if str(row['tags']) == 'nan' or str(row['choices']) == 'nan':
-#             continue
-#         tags = Tag.objects.filter(id__in=row['tags'].split(','))
-#         choices = AdminMultipleChoiceAnswer.objects.filter(id__in=row['choices'].split(','))
-#         correct_answer = AdminMultipleChoiceAnswer.objects.get(id=row['correct_answer'])
-#         creationDate = parse_datetime(row['creationDate'])
-#         multiple_choice_question, _ = MultipleChoiceQuestion.objects.get_or_create(
-#             id=row['id'] if str(row['id']) != 'nan' else None, sub=row['sub'] if str(row['sub']) != 'nan' else None,
-#             body=row['body'] if str(row['body']) != 'nan' else None,
-#             idealDuration=parse_duration(row['idealDuration']) if str(row['idealDuration']) != 'nan' else None,
-#             hint=row['hint'] if str(row['hint']) != 'nan' else None, correct_answer=correct_answer)
-#         multiple_choice_question.creationDate = creationDate
-#         for tag in tags:
-#             multiple_choice_question.tags.add(tag)
+                multiple_choice_question.choices.add(correct_answer)
+                multiple_choice_question.choices.add(choice_2)
+                multiple_choice_question.choices.add(choice_3)
+                multiple_choice_question.choices.add(choice_4)
 
-#         for choice in choices:
-#             multiple_choice_question.choices.add(choice)
-
-#         if str(row['image']) != 'nan':
-#             local_file = open(fr'F:\kawkab\backend\database\images\{row["image"]}', "rb")
-#             django_file = File(local_file)
-#             img_name = LastImageName.objects.first()
-#             multiple_choice_question.image.save(f'{img_name.name}.png', django_file)
-#             img_name.name += 1
-#             img_name.save()
-#             local_file.close()
-#         multiple_choice_question.save()
-
-#     return Response()
+                multiple_choice_question.save()
+    print('end')
+    return Response('Done')
 
 
 # @api_view(['POST'])

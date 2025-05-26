@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import app_flags, read_headlines, subject_set, headline_set, build_quiz, mark_quiz, similar_questions, \
+from .views import app_flags, read_headlines, read_multiple_choice_question_from_xlsx, subject_set, headline_set, build_quiz, mark_quiz, similar_questions, \
      add_or_edit_multiple_choice_question, add_or_edit_multi_section_question, add_or_edit_final_answer_question, \
      quiz_review, retake_quiz, quiz_history, subject_question_num, \
      get_admin_question, subject_question_ids, \
@@ -51,6 +51,7 @@ urlpatterns = [
      path('update_reel_last_view_at/', update_reel_last_view_at),
      path('update_reel_last_tap_at/', update_reel_last_tap_at),
      path('app_flags/', app_flags),
+     path('read_multiple_choice_question_from_xlsx/', read_multiple_choice_question_from_xlsx),
      path('test/', test),
      ##############################################
      # path('read_user_from_xlsx/', read_user_from_xlsx),
