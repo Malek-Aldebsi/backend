@@ -145,7 +145,9 @@ def headline_set(request):
         module_serializer = ModuleSerializer(modules, many=True).data
 
         user_account = Account.objects.get(user=user)
-        return Response({'modules': module_serializer, 'headlines': headlines, 'activate_first_semester': user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists(), 'activate_second_semester': user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists(), 'max_questions_per_quiz':60.0})
+        activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists()
+        activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists()
+        return Response({'modules': module_serializer, 'headlines': headlines, 'activate_first_semester': activate_first_semester, 'activate_second_semester': activate_second_semester, 'max_questions_per_quiz': 60.0 if activate_first_semester or activate_second_semester else 40})
     else:
         return Response(0)
 
@@ -2010,7 +2012,6 @@ def read_multiple_choice_question_from_xlsx(request):
     print('end')
     return Response('Done')
 
-# question	answer	lesson
 @api_view(['POST'])
 def read_reels_question_from_xlsx(request):
     data = request.data
