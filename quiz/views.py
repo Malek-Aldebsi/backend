@@ -94,7 +94,7 @@ def app_flags(request):
     data = request.data
     if _check_user(data):
         user = get_user(data)
-    return Response({'app_version': 0.0})
+    return Response({'app_version': 0.1, 'deprecated_version':0.0})
 
 @api_view(['POST'])
 def edit_user_info(request):
@@ -441,9 +441,8 @@ def get_reels(request):
         params.append(T)
         params.append(question_num)
 
-        # return list(ReelQuestion.objects.raw(sql, params))
-        reels = list(ReelQuestion.objects.raw(sql, params)) # TODO add serializer for reels
-        return Response(QuestionSerializer(reels, many=True, context={'user_id': user.id}).data)
+        reels = list(ReelQuestion.objects.raw(sql, params))
+        return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 'max_reels_per_day':30})
     else:
         return Response(0)
 
