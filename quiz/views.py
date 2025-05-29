@@ -442,7 +442,10 @@ def get_reels(request):
         params.append(question_num)
 
         reels = list(ReelQuestion.objects.raw(sql, params))
-        return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 'max_reels_per_day':30})
+        user_account = Account.objects.get(user=user)
+        activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists()
+        activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists()
+        return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 'max_reels_per_day':30, 'subscribed': activate_first_semester and activate_second_semester})
     else:
         return Response(0)
 
