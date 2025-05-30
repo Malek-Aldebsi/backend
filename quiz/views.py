@@ -1853,6 +1853,20 @@ def test(request):
     q = set(MultiSectionQuestion.objects.all()[:5]) | set(MultipleChoiceQuestion.objects.all()[0:5])
     return Response(QuestionSerializer(q, many=True, context={'user_id': user.id}).data)
 
+@api_view(['GET'])
+def get_wrong_question(request):
+    questions = {}
+    for report in Report.objects.all():
+        tags = report.question.tags.exclude(headbase=None)
+        tag = tags.first().headbase
+        while hasattr(tag, 'headline'):
+            tag = tag.headline.parent_headline
+        subject = tag.h1.parent_lesson.parent_module.parent_subject.name
+        if subject not in questions:
+            questions[subject] = []
+        questions[subject].append({str(report.question.id): report.body})
+    return Response(questions)
+
 @api_view(['POST'])
 def read_headlines(request):
     df = pd.read_excel(r'F:\kawkab\backend\database\Hry_2_2025.xlsx') # TODO
