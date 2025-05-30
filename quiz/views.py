@@ -1863,7 +1863,7 @@ def get_wrong_question(request):
         while hasattr(tag, 'headline'):
             tag = tag.headline.parent_headline
         subject = tag.h1.parent_lesson.parent_module.parent_subject
-        if subject.id not in subjects:
+        if str(subject.id) not in subjects:
             continue
         if subject.name not in questions:
             questions[subject.name] = []
