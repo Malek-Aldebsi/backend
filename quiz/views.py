@@ -1855,16 +1855,19 @@ def test(request):
 
 @api_view(['GET'])
 def get_wrong_question(request):
+    subjects = ['3d5d0297-5c92-4acb-a02a-f837d5e7d3e1','73d118f6-af98-4952-93bf-e965b7d1fb9a','ca149d5f-1fc7-495d-96b6-d276df3937e6','8e9a4662-05e3-4718-8ba1-23a6b1982217']
     questions = {}
     for report in Report.objects.all():
         tags = report.question.tags.exclude(headbase=None)
         tag = tags.first().headbase
         while hasattr(tag, 'headline'):
             tag = tag.headline.parent_headline
-        subject = tag.h1.parent_lesson.parent_module.parent_subject.name
-        if subject not in questions:
-            questions[subject] = []
-        questions[subject].append({str(report.question.id): report.body})
+        subject = tag.h1.parent_lesson.parent_module.parent_subject
+        if subject.id not in subjects:
+            continue
+        if subject.name not in questions:
+            questions[subject.name] = []
+        questions[subject.name].append({str(report.question.id): report.body})
     return Response(questions)
 
 @api_view(['POST'])
