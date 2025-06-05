@@ -1973,7 +1973,7 @@ def read_headlines(request):
 @api_view(['POST'])
 def read_multiple_choice_question_from_xlsx(request):
     data = request.data
-    df = pd.read_excel(os.path.join(settings.DATABASE_FILES_DIR, 'grammer.xlsx')) # the file should saved in database folder
+    df = pd.read_excel(os.path.join(settings.DATABASE_FILES_DIR, 'x.xlsx')) # the file should saved in database folder
     # question	correct choice	choice 2	choice 3	choice 4	headline	lesson
     print('started')
     # ids = Subject.objects
@@ -2044,7 +2044,8 @@ def read_reels_question_from_xlsx(request):
             
             author = Author.objects.get(id="db6da5f3-05a2-45d1-bb11-c5f8b63890c9") # فريقنا
             try:
-                lesson = Lesson.objects.get(id=row['lesson'])
+                # lesson = Lesson.objects.get(id=row['lesson'])
+                lesson = Lesson.objects.get(id=data['lesson'], parent_module__name=f"Unit {row['unit']}")
             except:
                 print(row['question'])
                 continue
