@@ -147,7 +147,7 @@ admin.site.register(WritingQuestion, QuestionAdmin)
 admin.site.register(UserMultipleChoiceAnswer, ExportAllFields)
 admin.site.register(AdminMultipleChoiceAnswer, AdminMultipleChoiceAnswerAdmin)
 admin.site.register(UserFinalAnswer, ExportAllFields)
-admin.site.register(AdminFinalAnswer, ExportAllFields)
+admin.site.register(AdminFinalAnswer, AdminMultipleChoiceAnswerAdmin)
 admin.site.register(UserMultiSectionAnswer, ExportAllFields)
 admin.site.register(UserWritingAnswer, UserWritingAnswerExportAllFields)
 
