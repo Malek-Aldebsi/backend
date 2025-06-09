@@ -102,26 +102,26 @@ def statistics(request):
 #     return Response(check_account_info(data))
 
 
-@api_view(['POST'])
-def sign_up(request):
-    # 0-->account_created  1-->account_already_exit
-    data = request.data
-    is_signup = signup(data)
-    if not is_signup:
-        subject = 'New user'
-        message = f'A new user has Signed Up. Number of users is {User.objects.count()} now'
-        try:
-            send_mail(
-                subject,
-                message,
-                settings.EMAIL_HOST_USER,
-                ['malek315@gmail.com', 'osamafitiani2001@gmail.com'],
-                fail_silently=False,
-            )
-        except:
-            pass
+# @api_view(['POST'])
+# def sign_up(request):
+#     # 0-->account_created  1-->account_already_exit
+#     data = request.data
+#     is_signup = signup(data)
+#     if not is_signup:
+#         subject = 'New user'
+#         message = f'A new user has Signed Up. Number of users is {User.objects.count()} now'
+#         try:
+#             send_mail(
+#                 subject,
+#                 message,
+#                 settings.EMAIL_HOST_USER,
+#                 ['malek315@gmail.com', 'osamafitiani2001@gmail.com'],
+#                 fail_silently=False,
+#             )
+#         except:
+#             pass
 
-    return Response(is_signup)
+#     return Response(is_signup)
 # {
 #     "email": "malek315@gmail.com",
 #     "phone": "0786636678",
@@ -133,7 +133,7 @@ def sign_up(request):
 # }
 
 @api_view(['POST'])
-def update_user_info(request):
+def sign_up(request):
     data = request.data
     try:
         user, created = User.objects.update_or_create(
