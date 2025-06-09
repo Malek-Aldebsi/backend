@@ -159,7 +159,7 @@ def log_in(request):
     user = User.objects.filter(phone=data['phone'], password=data['password'])
     if user.exists():
         return Response({'status': 'success', 'user_id':user.first().id, 'user_name': user.first().firstName})
-    elif User.objects.get(id=data['id']phone=data['phone']).exists():
+    elif User.objects.get(phone=data['phone']).exists():
         return Response({'status': 'wrong pass'})
     else:
         return Response({'status': 'phone not exist'})
