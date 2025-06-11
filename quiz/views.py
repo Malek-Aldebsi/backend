@@ -85,7 +85,7 @@ def dashboard(request):
 
         return Response({'user_info': user_serializer, 'num_of_user_quizzes': num_of_user_quizzes,
                          'num_of_user_answers': num_of_user_answers, 'total_duration': total_duration_hours,
-                         'user_answers_by_day': user_answers_by_day, 'ads': ads_serializer.data})
+                         'num_of_solved_questions_per_day': user_answers_by_day, 'ads': ads_serializer.data})
     else:
         return Response(0)
 
