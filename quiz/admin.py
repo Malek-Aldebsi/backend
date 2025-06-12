@@ -34,8 +34,11 @@ class UserWritingAnswerExportAllFields(ExportActionMixin, admin.ModelAdmin):
 
 class QuestionAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'body', 'image', 'tags__name', 'tags__headbase__h1__parent_lesson__name', 'tags__headbase__h1__parent_lesson__parent_module__name', 'tags__headbase__h1__parent_lesson__parent_module__parent_subject__name']
+    list_filter = ('is_hidden',)
     ordering = ('-creationDate',)
 
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
 
 class AdminMultipleChoiceAnswerAdmin(admin.ModelAdmin):
     search_fields = ['id', 'body']
@@ -44,8 +47,11 @@ class AdminMultipleChoiceAnswerAdmin(admin.ModelAdmin):
 
 class SubjectAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'grade']
+    list_filter = ('is_hidden',)
     ordering = ('grade',)
 
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
 
 class PackageActivationCodeAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'creation_date', 'code', 'user__id', 'used_date']
@@ -60,27 +66,42 @@ class PackageActivationCodeAdmin(ExportActionMixin, admin.ModelAdmin):
 
 class ModuleAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'parent_subject__name', 'semester']
+    list_filter = ('is_hidden',)
     ordering = ('parent_subject', 'order',)
 
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
 
 class LessonAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'parent_module__name', 'parent_module__parent_subject__name']
+    list_filter = ('is_hidden',)
     ordering = ('parent_module__parent_subject', 'parent_module', 'order',)
 
-
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
+    
 class TagAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name']
+    list_filter = ('is_hidden',)
 
-
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
+    
 class H1Admin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'parent_lesson__name', 'parent_lesson__parent_module__name', 'parent_lesson__parent_module__parent_subject__name']
+    list_filter = ('is_hidden',)
     ordering = ('parent_lesson__parent_module__parent_subject', 'parent_lesson__parent_module', 'parent_lesson', 'order',)
 
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
 
 class HeadLineAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'name', 'level']
+    list_filter = ('is_hidden',)
     ordering = ('level', 'order',)
 
+    def get_queryset(self, request):
+        return self.model.all_objects.all()
 
 class SavedQuestionAdmin(ExportActionMixin, admin.ModelAdmin):
     search_fields = ['id', 'user__userUID', 'user__firstName', 'question__id', 'question__body']

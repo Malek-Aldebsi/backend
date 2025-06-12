@@ -15,10 +15,18 @@ from sympy import symbols
 from sympy.parsing.latex import parse_latex
 
 
+class VisibleQuestionManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_hidden=False)
+    
 class Tag(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     name = models.CharField(max_length=200, null=True, blank=True)
 
+    is_hidden = models.BooleanField(default=False, blank=True)
+    objects = VisibleQuestionManager()  # Default manager
+    all_objects = models.Manager()      # Full access
+    
     def __str__(self):
         return f'{self.name}'
 
@@ -268,6 +276,10 @@ class Question(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tags', blank=True)
     level = models.FloatField(default=2.0, blank=True)
     hint = models.TextField(null=True, blank=True)
+
+    is_hidden = models.BooleanField(default=False, blank=True)
+    objects = VisibleQuestionManager()  # Default manager
+    all_objects = models.Manager()      # Full access
 
     def __str__(self):
         return f'{self.body}'
