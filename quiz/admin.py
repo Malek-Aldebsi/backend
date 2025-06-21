@@ -114,7 +114,7 @@ class ReportAdmin(ExportActionMixin, admin.ModelAdmin):
     ordering = ('solved', '-creationDate',)
 
     def user_name(self, obj):
-        return obj.user.firstName
+        return obj.user.firstName if obj.user else ''
     def question_id(self, obj):
         if obj.question:
             return obj.question.id
