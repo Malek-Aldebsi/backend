@@ -19,20 +19,24 @@ from django.utils import timezone
 ######################################################################
 @api_view(['POST'])
 def create_anonymous_account(request):
+    data = request.data
+    is_testing = data.get('is_testing', False)
+
     userID = signupAsAnonymous()
     
-    subject = 'New user'
-    message = f'A new user has Signed Up. Number of users is {User.objects.count()} now'
-    try:
-        send_mail(
-            subject,
-            message,
-            settings.EMAIL_HOST_USER,
-            ['malek315@gmail.com', 'osamafitiani2001@gmail.com'],
-            fail_silently=False,
-        )
-    except:
-        pass
+    if not is_testing:
+        subject = 'New user'
+        message = f'A new user has Signed Up. Number of users is {User.objects.count()} now'
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                ['malek315@gmail.com', 'osamafitiani2001@gmail.com'],
+                fail_silently=False,
+            )
+        except:
+            pass
 
     return Response({'session_id': userID})
 ######################################################################
