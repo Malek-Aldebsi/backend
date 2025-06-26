@@ -59,7 +59,22 @@ class Account(models.Model):
 #     def __str__(self):
 #         return f'{self.user} --{self.date}'
 
+class Transaction(models.Model):
+    from quiz.models import Packages
 
+    PURCHASE_SOURCES = (
+        (1, 'apple'),
+        (2, 'google'),
+        (3, 'direct'),
+    )
+
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    creationDate = models.DateField(auto_now_add=True, null=True, blank=True)
+    user = models.ForeignKey(User, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
+    source = models.IntegerField(choices=PURCHASE_SOURCES, null=True, blank=True)
+    items = models.ManyToManyField(Packages, blank=True)
+
+    
 class Quote(models.Model):
     image = models.ImageField(storage=MediaRootS3Boto3Storage(), null=True, blank=True)
     creationDate = models.DateField(auto_now_add=True, null=True, blank=True)

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import activate_package, log_in, statistics, sign_up, check_user, check_admin, create_anonymous_account
+from .views import activate_package, activate_package_apple, log_in, statistics, sign_up, check_user, check_admin, create_anonymous_account
 
 urlpatterns = [
     # path('check_new_account_info/', check_new_account_info),
@@ -10,6 +10,7 @@ urlpatterns = [
     path('check_admin/', check_admin),
     path('log_in/', log_in),
     path('activate_package/', activate_package),
+    path('activate_package_apple/', activate_package_apple),
     # path('dashboard/', dashboard),
     # path('edit_tasks/', edit_tasks),
     path('statistics/', statistics),

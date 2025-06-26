@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from quiz.models import PackageActivationCode, Packages, Subject, UserQuiz
 from school import settings
-from user.models import Account, Quote, Ad, User
+from user.models import Account, Quote, Ad, Transaction, User
 from user.serializers import AdSerializer
 from user.utils import get_user, signup, _check_user, _check_admin, signupAsAnonymous
 
@@ -189,6 +189,34 @@ def activate_package(request):
             user_account = Account.objects.get(user=user)
             user_account.pkg_list.add(*card.pkgs.all())            
             return Response({'status': 'success'})
+    else:
+        return Response({'status': 'unauthorized'})
+    
+@api_view(['POST'])
+def activate_package_apple(request):
+    data = request.data
+    product_id = data.pop('product_id', None)
+    if _check_user(data):
+        user = get_user(data)
+        pkgs = set()
+        if product_id=='sem1all':
+            pkgs.add(Packages.objects.get(name='first_semester'))
+        elif product_id=='sem2all':
+            pkgs.add(Packages.objects.get(name='second_semester'))
+        elif product_id=='sem12all':
+            pkgs.add(Packages.objects.get(name='first_semester'))
+            pkgs.add(Packages.objects.get(name='second_semester'))
+
+        tx = Transaction.objects.create(
+            user=user,
+            source=1  # 1 for Apple
+        )
+        tx.items.add(*pkgs)            
+        tx.save()
+
+        user_account = Account.objects.get(user=user)
+        user_account.pkg_list.add(*pkgs)            
+        return Response({'status': 'success'})
     else:
         return Response({'status': 'unauthorized'})
     
