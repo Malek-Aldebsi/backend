@@ -195,11 +195,11 @@ def activate_package(request):
 @api_view(['POST'])
 def activate_package_apple(request):
     data = request.data
-    products_ids = data.pop('products_ids', None)
+    product_id = data.pop('product_id', None)
     if _check_user(data):
         user = get_user(data)
         user_account = Account.objects.get(user=user)
-        pkg = Packages.objects.filter(app_store_product_id__in=products_ids)
+        pkg = Packages.objects.filter(app_store_product_id__in=product_id)
         if pkg in user_account.items.all():
             return Response({'status': 'pre-used'})
         tx = Transaction.objects.create(
