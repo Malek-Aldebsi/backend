@@ -148,8 +148,8 @@ def headline_set(request):
         module_serializer = ModuleSerializer(modules, many=True).data
 
         user_account = Account.objects.get(user=user)
-        activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists()
-        activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists()
+        activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists() or user_account.pkg_list.filter(id='8e9b97fe-13a8-444c-b24f-c31ab7490706').exists()
+        activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists() or user_account.pkg_list.filter(id='8e9b97fe-13a8-444c-b24f-c31ab7490706').exists()
         return Response({'modules': module_serializer, 'headlines': headlines, 'activate_first_semester': activate_first_semester, 'activate_second_semester': activate_second_semester, 'max_questions_per_quiz': 60.0 if activate_first_semester or activate_second_semester else 40.0})
     else:
         return Response(0)
@@ -446,8 +446,8 @@ def get_reels(request):
 
         reels = list(ReelQuestion.objects.raw(sql, params))
         user_account = Account.objects.get(user=user)
-        activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists()
-        activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists()
+        activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists() or user_account.pkg_list.filter(id='8e9b97fe-13a8-444c-b24f-c31ab7490706').exists()
+        activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists() or user_account.pkg_list.filter(id='8e9b97fe-13a8-444c-b24f-c31ab7490706').exists()
         return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 'max_reels_per_day':30, 'subscribed': activate_first_semester and activate_second_semester})
     else:
         return Response(0)
