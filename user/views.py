@@ -199,18 +199,17 @@ def activate_package_apple(request):
     if _check_user(data):
         user = get_user(data)
         user_account = Account.objects.get(user=user)
-        pkgs = Packages.objects.filter(app_store_product_id__in=products_ids)
-        for pkg in pkgs:
-            if pkg in user_account.items.all():
-                return Response({'status': 'pre-used'})
+        pkg = Packages.objects.filter(app_store_product_id__in=products_ids)
+        if pkg in user_account.items.all():
+            return Response({'status': 'pre-used'})
         tx = Transaction.objects.create(
             user=user,
             source=1  # 1 for Apple
         )
-        tx.items.add(*pkgs)            
+        tx.items.add(pkg)            
         tx.save()
 
-        user_account.pkg_list.add(*pkgs)            
+        user_account.pkg_list.add(pkg)            
         return Response({'status': 'success'})
     else:
         return Response({'status': 'unauthorized'})
