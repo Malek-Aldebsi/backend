@@ -199,14 +199,24 @@ def activate_package_apple(request):
     if _check_user(data):
         user = get_user(data)
         pkgs = set()
+        user_account = Account.objects.get(user=user)
         if product_id=='sem1all':
-            pkgs.add(Packages.objects.get(name='first_semester'))
+            pkg = Packages.objects.get(name='first_semester')
+            if pkg in user_account.items.all():
+                return Response({'status': 'pre-used'})
+            pkgs.add(pkg)
         elif product_id=='sem2all':
-            pkgs.add(Packages.objects.get(name='second_semester'))
+            pkg = Packages.objects.get(name='second_semester')
+            if pkg in user_account.items.all():
+                return Response({'status': 'pre-used'})
+            pkgs.add(pkg)
         elif product_id=='sem12all':
-            pkgs.add(Packages.objects.get(name='first_semester'))
-            pkgs.add(Packages.objects.get(name='second_semester'))
-
+            fst_pkg = Packages.objects.get(name='first_semester')
+            scd_pkg = Packages.objects.get(name='second_semester')
+            if fst_pkg in user_account.items.all() or scd_pkg not in user_account.items.all():
+                return Response({'status': 'pre-used'})
+            pkgs.add(scd_pkg)
+            pkgs.add(fst_pkg)
         tx = Transaction.objects.create(
             user=user,
             source=1  # 1 for Apple
@@ -214,7 +224,6 @@ def activate_package_apple(request):
         tx.items.add(*pkgs)            
         tx.save()
 
-        user_account = Account.objects.get(user=user)
         user_account.pkg_list.add(*pkgs)            
         return Response({'status': 'success'})
     else:

@@ -83,9 +83,12 @@ def dashboard(request):
         ads = Ad.objects.filter(active=True).order_by('creationDate')
         ads_serializer = AdSerializer(ads, many=True)
 
+        user_account = Account.objects.get(user=user)
+        pkgs = user_account.pkg_list.all().values_list('name')
         return Response({'user_info': user_serializer, 'num_of_user_quizzes': num_of_user_quizzes,
                          'num_of_user_answers': num_of_user_answers, 'total_duration': total_duration_hours,
-                         'num_of_solved_questions_per_day': user_answers_by_day, 'ads': ads_serializer.data})
+                         'num_of_solved_questions_per_day': user_answers_by_day, 'ads': ads_serializer.data,
+                         'pkgs': pkgs})
     else:
         return Response(0)
 
