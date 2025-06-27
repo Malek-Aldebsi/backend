@@ -382,6 +382,7 @@ class LastImageName(models.Model):
 class Packages(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
+    app_store_product_id = models.CharField(max_length=100, null=True, blank=True)
 
     creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 

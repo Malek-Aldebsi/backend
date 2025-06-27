@@ -195,28 +195,14 @@ def activate_package(request):
 @api_view(['POST'])
 def activate_package_apple(request):
     data = request.data
-    product_id = data.pop('product_id', None)
+    products_ids = data.pop('products_ids', None)
     if _check_user(data):
         user = get_user(data)
-        pkgs = set()
         user_account = Account.objects.get(user=user)
-        if product_id=='sem1all':
-            pkg = Packages.objects.get(name='first_semester')
+        pkgs = Packages.objects.filter(app_store_product_id__in=products_ids)
+        for pkg in pkgs:
             if pkg in user_account.items.all():
                 return Response({'status': 'pre-used'})
-            pkgs.add(pkg)
-        elif product_id=='sem2all':
-            pkg = Packages.objects.get(name='second_semester')
-            if pkg in user_account.items.all():
-                return Response({'status': 'pre-used'})
-            pkgs.add(pkg)
-        elif product_id=='sem12all':
-            fst_pkg = Packages.objects.get(name='first_semester')
-            scd_pkg = Packages.objects.get(name='second_semester')
-            if fst_pkg in user_account.items.all() or scd_pkg not in user_account.items.all():
-                return Response({'status': 'pre-used'})
-            pkgs.add(scd_pkg)
-            pkgs.add(fst_pkg)
         tx = Transaction.objects.create(
             user=user,
             source=1  # 1 for Apple
