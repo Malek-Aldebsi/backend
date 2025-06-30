@@ -1862,7 +1862,7 @@ def get_wrong_question(request):
     questions = {
         'issues': []
     }
-    for report in Report.objects.all():
+    for report in Report.objects.exclude(question=None):
         try:
             tags = report.question.tags.exclude(headbase=None)
             tag = tags.first().headbase
