@@ -3,32 +3,54 @@ from import_export.admin import ExportActionMixin
 
 from quiz.models import UserQuiz
 from .models import Transaction, User, Quote, Ad, Account
+from django.db.models import Count, Max
 
 
 class ExportAllFields(ExportActionMixin, admin.ModelAdmin):
     pass
 
 
+from django.contrib.admin import SimpleListFilter
+
+class CreationYearFilter(SimpleListFilter):
+    title = 'Creation Year'
+    parameter_name = 'creation_year'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('2025', '2025'),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == '2025':
+            return queryset.filter(creationDate__year=2025)
+        return queryset
+
 class UserAdmin(ExportActionMixin, admin.ModelAdmin):
-    list_display = ('userUID', 'user_name', 'age', 'school_name', 'listenFrom', 'quizzes_num', 'last_quiz', 'creationDate')
-    search_fields = ['userUID', 'firstName', 'lastName', 'age', 'school_name', 'listenFrom']
+    list_display = ('id', 'user_name', 'quizzes_num', 'last_quiz', 'creationDate')
+    search_fields = ['id', 'firstName', 'lastName']
     ordering = (['-creationDate'])
+    list_filter = ([CreationYearFilter])
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.annotate(
+            quizzes_num_annotation=Count('userquiz'),
+            last_quiz_annotation=Max('userquiz__creationDate')
+        )
+        return qs
 
     @staticmethod
     def user_name(obj):
         return obj
 
-    @staticmethod
-    def last_quiz(obj):
-        if UserQuiz.objects.filter(user=obj).exists():
-            return UserQuiz.objects.filter(user=obj).order_by('creationDate').last().creationDate
-        else:
-            return None
+    def quizzes_num(self, obj):
+        return obj.quizzes_num_annotation
+    quizzes_num.admin_order_field = 'quizzes_num_annotation'
 
-    @staticmethod
-    def quizzes_num(obj):
-        return UserQuiz.objects.filter(user=obj).count()
-
+    def last_quiz(self, obj):
+        return obj.last_quiz_annotation
+    last_quiz.admin_order_field = 'last_quiz_annotation'
 
 # class FreeAccountAdmin(ExportActionMixin, admin.ModelAdmin):
 #     list_display = ('id', 'user', 'used_questions')
