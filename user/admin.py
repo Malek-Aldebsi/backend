@@ -30,7 +30,7 @@ class UserAdmin(ExportActionMixin, admin.ModelAdmin):
     list_display = ('id', 'user_name', 'quizzes_num', 'last_quiz', 'creationDate')
     search_fields = ['id', 'firstName', 'lastName']
     ordering = (['-creationDate'])
-    list_filter = ([CreationYearFilter])
+    list_filter = ([CreationYearFilter, 'anonymous'])
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
