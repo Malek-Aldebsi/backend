@@ -6,17 +6,15 @@ from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
-from datetime import timedelta, date
-from django.db.models.functions import Now, Coalesce, Log
 
 from school import settings
-from user.models import Account, Ad, User
+from user.models import Account, Ad
 from user.serializers import AdSerializer, UserSerializer
 from user.utils import _check_user, get_user, _check_admin
 from .models import Module, Module, ReelInteraction, ReelQuestion, Subject, Question, Lesson, FinalAnswerQuestion, AdminFinalAnswer, \
-    MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, UserFinalAnswer, \
-    UserMultipleChoiceAnswer, UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
-    UserMultiSectionAnswer, UserWritingAnswer, WritingQuestion, AdminQuiz, Quiz, Tag, Report, SavedQuestion, \
+    MultipleChoiceQuestion, AdminMultipleChoiceAnswer, H1, HeadLine, HeadBase, \
+    UserQuiz, Author, LastImageName, UserAnswer, MultiSectionQuestion, \
+    UserWritingAnswer, WritingQuestion, AdminQuiz, Tag, Report, SavedQuestion, \
     SpecialTags, Packages
 from .serializers import ModuleSerializer, QuestionSerializer, UserAnswerSerializer, AdminQuizSerializer
 from django.shortcuts import render
@@ -36,11 +34,6 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
 import itertools
 from django.db.models import Case, When, Value, FloatField, F, Max
 from django.db.models.functions import Random
-from django.db.models import ExpressionWrapper
-from django.db.models.functions import Coalesce
-from django.db.models import OuterRef, Subquery
-
-# import re
 
 ######################################################################
 # TODO the errors must be handeled in this way return Response({'status': 'unauthorized'}, status=403)
@@ -148,9 +141,20 @@ def headline_set(request):
         module_serializer = ModuleSerializer(modules, many=True).data
 
         user_account = Account.objects.get(user=user)
+        activate_english_pkg = user_account.pkg_list.filter(name='English pkg').exists()
+        activate_arabic_pkg = user_account.pkg_list.filter(name='Arabic pkg').exists()
+        activate_deen_pkg = user_account.pkg_list.filter(name='Deen pkg').exists()
+        activate_history_pkg = user_account.pkg_list.filter(name='History pkg').exists()
+        # TODO remove the below two lines
         activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists() or user_account.pkg_list.filter(id='aa678efb-e799-43aa-97df-08b6326029c1').exists()
         activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists() or user_account.pkg_list.filter(id='aa678efb-e799-43aa-97df-08b6326029c1').exists()
-        return Response({'modules': module_serializer, 'headlines': headlines, 'activate_first_semester': activate_first_semester, 'activate_second_semester': activate_second_semester, 'max_questions_per_quiz': 60.0 if activate_first_semester or activate_second_semester else 40.0})
+        return Response({'modules': module_serializer, 'headlines': headlines, 'max_questions_per_quiz': 60.0, 
+                         'activate_english_pkg': activate_english_pkg,
+                         'activate_arabic_pkg': activate_arabic_pkg,
+                         'activate_deen_pkg': activate_deen_pkg,
+                         'activate_history_pkg': activate_history_pkg,
+                         'activate_first_semester': activate_first_semester,
+                         'activate_second_semester': activate_second_semester})
     else:
         return Response(0)
 
@@ -446,9 +450,22 @@ def get_reels(request):
 
         reels = list(ReelQuestion.objects.raw(sql, params))
         user_account = Account.objects.get(user=user)
+        
+        activate_english_pkg = user_account.pkg_list.filter(name='English pkg').exists()
+        activate_arabic_pkg = user_account.pkg_list.filter(name='Arabic pkg').exists()
+        activate_deen_pkg = user_account.pkg_list.filter(name='Deen pkg').exists()
+        activate_history_pkg = user_account.pkg_list.filter(name='History pkg').exists()
+        # TODO remove the below two lines
         activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists() or user_account.pkg_list.filter(id='aa678efb-e799-43aa-97df-08b6326029c1').exists()
         activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists() or user_account.pkg_list.filter(id='aa678efb-e799-43aa-97df-08b6326029c1').exists()
-        return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 'max_reels_per_day':30, 'subscribed': activate_first_semester and activate_second_semester})
+        return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 
+                         'max_reels_per_day':30, 
+                         'subscribed': activate_first_semester and activate_second_semester,
+                         'activate_english_reels': activate_english_pkg,
+                         'activate_arabic_reels': activate_arabic_pkg,
+                         'activate_deen_reels': activate_deen_pkg,
+                         'activate_history_reels': activate_history_pkg,
+                         })
     else:
         return Response(0)
 
