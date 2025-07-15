@@ -12,4 +12,4 @@ class UserSerializer(serializers.ModelSerializer):
 class BannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Banner
-        fields = ['name', 'image', 'external_link']
+        fields = ['name', 'image', 'image_web', 'external_link']
