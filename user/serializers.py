@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from user.models import User, Ad
+from user.models import User, Banner
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AdSerializer(serializers.ModelSerializer):
+class BannerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Ad
+        model = Banner
         fields = ['name', 'image', 'external_link']

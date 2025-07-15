@@ -2,7 +2,7 @@ from django.contrib import admin
 from import_export.admin import ExportActionMixin
 
 from quiz.models import UserQuiz
-from .models import Transaction, User, Quote, Ad, Account
+from .models import Transaction, User, Quote, Banner, Account
 from django.db.models import Count, Max
 
 
@@ -73,4 +73,4 @@ admin.site.register(User, UserAdmin)
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Quote, ExportAllFields)
 admin.site.register(Transaction, ExportAllFields)
-admin.site.register(Ad, ExportAllFields)
+admin.site.register(Banner, ExportAllFields)

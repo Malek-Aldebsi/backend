@@ -83,12 +83,12 @@ class Quote(models.Model):
         return f'{self.creationDate}'
 
 
-class Ad(models.Model):
+class Banner(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(storage=MediaRootS3Boto3Storage(), null=True, blank=True)
-    external_link = models.TextField(null=True, blank=True)
+    external_link = models.TextField(null=True, blank=True) # TODO replace by url
     active = models.BooleanField(default=False, null=True)
-    creationDate = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
-        return f'{self.name} --{self.creationDate}'
+        return f'{self.name} --{self.created_at}'

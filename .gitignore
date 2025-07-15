@@ -1,4 +1,5 @@
 quiz/migrations/__pycache__/
+user/migrations/__pycache__/
 quiz/__pycache__/
 user/__pycache__/
 school/__pycache__/

@@ -8,8 +8,7 @@ from rest_framework.response import Response
 
 from quiz.models import PackageActivationCode, Packages, Subject, UserQuiz
 from school import settings
-from user.models import Account, Quote, Ad, Transaction, User
-from user.serializers import AdSerializer
+from user.models import Account, Transaction, User
 from user.utils import get_user, signup, _check_user, _check_admin, signupAsAnonymous
 
 from django.shortcuts import render
