@@ -85,7 +85,14 @@ class Quote(models.Model):
 
 class Banner(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True)
-    image = models.ImageField(storage=MediaRootS3Boto3Storage(), null=True, blank=True)
+    image = models.ImageField( # TODO change to image_app
+        storage=MediaRootS3Boto3Storage(), null=True, blank=True, 
+        help_text="Image used in mobile app"
+    )
+    image_web = models.ImageField(
+        storage=MediaRootS3Boto3Storage(), null=True, blank=True,
+        help_text="Image used in web interface"
+    )
     external_link = models.TextField(null=True, blank=True) # TODO replace by url
     active = models.BooleanField(default=False, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
