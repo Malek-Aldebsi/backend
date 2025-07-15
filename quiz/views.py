@@ -1255,7 +1255,7 @@ def share_quiz(request):
                      'duration': quiz.duration.total_seconds() if quiz.duration is not None else None})
 
 @api_view(['POST'])
-def get_admin_suggestions(request):
+def get_content_dashborad_suggestions(request):
     data = request.data
     if _check_admin(data):
         h1s = H1.objects.all().annotate(
@@ -1269,7 +1269,7 @@ def get_admin_suggestions(request):
 
         headBases = list(h1s.union(headlines))
         authors = Author.objects.all().values_list('name', flat=True)
-        return Response({"headBases": headBases, 'authors': authors})
+        return Response({"headlines": headBases, 'authors': authors})
     else:
         return Response(0)
 

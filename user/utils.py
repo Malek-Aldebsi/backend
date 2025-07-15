@@ -69,9 +69,9 @@ def _check_user(data):
 
 
 def _check_admin(data):
-    userUID = data.get('userUID', None)
-    if userUID is not None:
-        return User.objects.filter(userUID=userUID, admin=True).exists()
+    id = data.get('id', None)
+    if id is not None:
+        return User.objects.filter(id=id, admin=True).exists()
     return False
 
 
