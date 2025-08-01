@@ -1322,7 +1322,7 @@ def add_or_edit_multiple_choice_question(request):
             LastImageName.objects.update(name=F('name') + 1)
         question.image = ContentFile(image_data, str(image_name) + '.png')
         
-    correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choices[0])
+    correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choices[0]['choice'])
     question.choices.add(correct_answer)
     question.correct_answer = correct_answer
 
