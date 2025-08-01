@@ -1297,10 +1297,8 @@ def add_or_edit_multiple_choice_question(request):
     image_base64 = data.pop('image', None)
 
     choices = data.pop('choices', None)
-    notes = data.pop('notes', None)
 
-    headlines = data.pop('headlines', None)
-    headlines_level = data.pop('headlines_level', None)
+    headlines = data.pop('headlines', [])
     special_tags = data.pop('special_tags', [])
 
     source = data.pop('source', None)
@@ -1328,8 +1326,8 @@ def add_or_edit_multiple_choice_question(request):
     question.choices.add(correct_answer)
     question.correct_answer = correct_answer
 
-    for body, note in zip(choices[1:], notes[1:]):
-        choice = AdminMultipleChoiceAnswer.objects.create(body=body, notes=note)
+    for choice_info in choices[1:]:
+        choice = AdminMultipleChoiceAnswer.objects.create(body=choice_info['choice'], notes=choice_info['additionalInfo'])
         question.choices.add(choice)
 
     choices = list(question.choices.all())
@@ -1338,12 +1336,12 @@ def add_or_edit_multiple_choice_question(request):
         choice.order = index
         choice.save()
     
-    for name, level_val in zip(headlines, headlines_level):
-        headline_part, parent_part = map(str.strip, name.split(' -- '))
-        if level_val == 1:
+    for headline in headlines:
+        headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
+        if headline['level'] == 1:
             tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
         else:
-            tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=level_val)
+            tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
         question.tags.add(tag)
 
     author, _ = Author.objects.get_or_create(name=source)
