@@ -1290,7 +1290,6 @@ def get_admin_question(request):
 def add_or_edit_multiple_choice_question(request):
     data = request.data
 
-    edit = data.pop('edit', False)
     question_id = data.pop('question_id', None)
 
     question_body = data.pop('question_body', None)
@@ -1304,6 +1303,7 @@ def add_or_edit_multiple_choice_question(request):
     source = data.pop('source', None)
     level = data.pop('level', None)
 
+    edit = question_id != None
     if edit:
         question = Question.objects.get(id=question_id).multiplechoicequestion
         question.choices.all().delete()
