@@ -1354,64 +1354,52 @@ def add_or_edit_multiple_choice_question(request):
     question.save()
     return Response({'id': str(question.id)})
 
-
 @api_view(['POST'])
 def add_or_edit_final_answer_question(request):
     data = request.data
 
-    edit = data.pop('edit', False)
+    question_id = data.pop('question_id', None)
 
-    question_id = data.pop('ID', None)
-
-    question_body = data.pop('question', None)
-    image = data.pop('image', None)
+    question_body = data.pop('question_body', None)
+    image_base64 = data.pop('image', None)
 
     answer = data.pop('answer', None)
 
-    headlines = data.pop('headlines', None)
-    headlines_level = data.pop('headlines_level', None)
+    headlines = data.pop('headlines', [])
+    special_tags = data.pop('special_tags', [])
 
     source = data.pop('source', None)
-
     level = data.pop('level', None)
-    levels = {1: 'easy', 2: 'inAverage', 3: 'hard'}
 
-    special_tags = data.pop('specialTags', [])
-
-    if not edit:
-        question = FinalAnswerQuestion.objects.create(body=question_body, level=level)
-    else:
+    edit = question_id != None
+    if edit:
         question = Question.objects.get(id=question_id).finalanswerquestion
-
         question.correct_answer.delete()
-        question.correct_answer = None
         question.tags.clear()
-
         question.body = question_body
         question.level = level
-        question.save()
-
+    else:
+        question = FinalAnswerQuestion.objects.create(body=question_body, level=level)
+        
+    if image_base64:
+        image_data = base64.b64decode(image_base64)
+        if edit:
+            image_name = question.image.name or 'edited_image'
+        else:
+            image_name = str(LastImageName.objects.first().name)
+            LastImageName.objects.update(name=F('name') + 1)
+        question.image = ContentFile(image_data, str(image_name) + '.png')
+        
     correct_answer = AdminFinalAnswer.objects.create(body=answer)
     question.correct_answer = correct_answer
-
-    if image is not None and not edit:
-        image = base64.b64decode(image)
-        image_name = LastImageName.objects.first()
-        question.image = ContentFile(image, str(image_name.name) + '.png')
-        image_name.name += 1
-        image_name.save()
-    elif image is not None and edit:
-        image = base64.b64decode(image)
-        image_name = question.image.name
-        question.image = ContentFile(image, str(image_name) + '.png')
-
-    for i in range(len(headlines)):
-        if headlines_level[i] == 1:
-            headline = H1.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_lesson__name=headlines[i].split(' -- ')[1].strip())
-            question.tags.add(headline)
+    
+    for headline in headlines:
+        headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
+        if headline['level'] == 1:
+            tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
         else:
-            headline = HeadLine.objects.get(name=headlines[i].split(' -- ')[0].strip(), parent_headline__name=headlines[i].split(' -- ')[1].strip(), level=headlines_level[i])
-            question.tags.add(headline)
+            tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
+        question.tags.add(tag)
 
     author, _ = Author.objects.get_or_create(name=source)
     question.tags.add(author)
@@ -1421,8 +1409,7 @@ def add_or_edit_final_answer_question(request):
         question.tags.add(tag)
 
     question.save()
-    return Response({'check': 1, 'id': str(question.id)})
-
+    return Response({'id': str(question.id)})
 
 @api_view(['POST'])
 def add_or_edit_multi_section_question(request):
