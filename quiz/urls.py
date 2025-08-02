@@ -3,7 +3,7 @@ from django.urls import path
 from .views import app_flags, get_wrong_question, read_headlines, read_multiple_choice_question_from_xlsx, read_reels_question_from_xlsx, subject_set, headline_set, build_quiz, mark_quiz, similar_questions, \
      add_or_edit_multiple_choice_question, add_or_edit_multi_section_question, add_or_edit_final_answer_question, \
      quiz_review, retake_quiz, quiz_history, subject_question_num, \
-     get_admin_question, subject_question_ids, \
+     get_question, subject_question_ids, \
      mark_question, get_shared_question, mark_shared_question, share_quiz, dashboard, get_writing_question, \
      submit_writing_question, add_writing_topic, add_suggested_quiz, suggested_quizzes, take_quiz, edit_user_info, \
      subject_analysis, test, get_saved_question, saved_questions, report, save_question, \
@@ -31,7 +31,7 @@ urlpatterns = [
      path('add_or_edit_final_answer_question/', add_or_edit_final_answer_question),
      path('add_or_edit_multi_section_question/', add_or_edit_multi_section_question),
      path('add_suggested_quiz/', add_suggested_quiz),
-     path('get_admin_question/', get_admin_question),
+     path('get_question/', get_question),
      path('get_content_dashborad_suggestions/', get_content_dashborad_suggestions),
      path('reset_questions_level_and_ideal_duration/', reset_questions_level_and_ideal_duration),
      # path('delete_users_answers/', delete_users_answers),

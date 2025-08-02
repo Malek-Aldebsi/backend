@@ -1275,13 +1275,13 @@ def get_content_dashborad_suggestions(request):
 
 
 @api_view(['POST'])
-def get_admin_question(request):
+def get_question(request):
     data = request.data
 
-    question_id = data.pop('ID', None)
+    question_id = data.pop('question_id', None)
 
     question_obj = Question.objects.get(id=question_id)
-    serializer = QuestionSerializer(question_obj, many=False).data # TODO add the user id to get saved field
+    serializer = QuestionSerializer(question_obj, many=False).data
 
     return Response(serializer)
 
