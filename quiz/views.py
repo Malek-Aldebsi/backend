@@ -1415,87 +1415,83 @@ def add_or_edit_final_answer_question(request):
 def add_or_edit_multi_section_question(request):
     data = request.data
 
-    edit = data.pop('edit', False)
+    question_id = data.pop('question_id', None)
 
-    question_id = data.pop('ID', None)
+    question_body = data.pop('question_body', None)
+    image_base64 = data.pop('image', None)
 
-    question_body = data.pop('question', None)
-    image = data.pop('image', None)
-
-    sub_questions = data.pop('subQuestions', None)
+    sections = data.pop('sections', None)
 
     source = data.pop('source', None)
 
-    level = 1
-    levels = {1: 'easy', 2: 'inAverage', 3: 'hard'}
-
-    if not edit:
-        question = MultiSectionQuestion.objects.create(body=question_body)
-    else:
+    edit = question_id != None
+    if edit:
         question = Question.objects.get(id=question_id).multisectionquestion
-
         question.sub_questions.all().delete()
         question.tags.clear()
-
         question.body = question_body
-        question.level = level
-        question.save()
-
-    if image is not None and not edit:
-        image = base64.b64decode(image)
-        image_name = LastImageName.objects.first()
-        question.image = ContentFile(image, str(image_name.name) + '.png')
-        image_name.name += 1
-        image_name.save()
-
-    if image is not None and edit:
-        image = base64.b64decode(image)
-        image_name = question.image.name
-        question.image = ContentFile(image, str(image_name) + '.png')
-
+    else:
+        question = MultiSectionQuestion.objects.create(body=question_body)
+        
+    if image_base64:
+        image_data = base64.b64decode(image_base64)
+        if edit:
+            image_name = question.image.name or 'edited_image'
+        else:
+            image_name = str(LastImageName.objects.first().name)
+            LastImageName.objects.update(name=F('name') + 1)
+        question.image = ContentFile(image_data, str(image_name) + '.png')
+    
+    
     author, _ = Author.objects.get_or_create(name=source)
     question.tags.add(author)
 
-    for ques in sub_questions:
-        if ques['type'] == 'finalAnswerQuestion':
-            correct_answer = AdminFinalAnswer.objects.create(body=ques['answer'])
-            sub_question = FinalAnswerQuestion.objects.create(body=ques['question'], correct_answer=correct_answer,
+    level = 0
+    for section in sections:
+        if section['type'] == 'finalAnswerQuestion':
+            correct_answer = AdminFinalAnswer.objects.create(body=section['answer'])
+            sub_question = FinalAnswerQuestion.objects.create(body=section['question'], correct_answer=correct_answer,
                                                               sub=True)
-
-        elif ques['type'] == 'multipleChoiceQuestion':
-            correct_answer = AdminMultipleChoiceAnswer.objects.create(body=ques['choices'][0])
-            sub_question = MultipleChoiceQuestion.objects.create(body=ques['question'], correct_answer=correct_answer,
-                                                                 sub=True)
+        elif section['type'] == 'multipleChoiceQuestion':
+            correct_answer = AdminMultipleChoiceAnswer.objects.create(body=section['choices'][0]['choice'])
+            sub_question = MultipleChoiceQuestion.objects.create(body=section['question'], correct_answer=correct_answer,
+                                                              sub=True)
             sub_question.choices.add(correct_answer)
-
-            for choiceIndex in range(1, len(ques['choices'])):
-                choice = AdminMultipleChoiceAnswer.objects.create(body=ques['choices'][choiceIndex],
-                                                                  notes=ques['choicesNotes'][choiceIndex])
+            for choice_info in section['choices'][1:]:
+                choice = AdminMultipleChoiceAnswer.objects.create(body=choice_info['choice'], notes=choice_info['additionalInfo'])
                 sub_question.choices.add(choice)
 
-        for i in range(len(ques['headlines'])):
-            if ques['headlinesLevel'][i] == 1:
-                headline = H1.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), parent_lesson__name=ques['headlines'][i].split(' -- ')[1].strip())
+            choices = list(sub_question.choices.all())
+            random.shuffle(choices)
+            for index, choice in enumerate(choices):
+                choice.order = index
+                choice.save()
+            
+        for headline in section['headlines']:
+            headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
+            if headline['level'] == 1:
+                tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
             else:
-                headline = HeadLine.objects.get(name=ques['headlines'][i].split(' -- ')[0].strip(), parent_headline__name=ques['headlines'][i].split(' -- ')[1].strip(), level=ques['headlinesLevel'][i])
+                tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
+            sub_question.tags.add(tag)
+            question.tags.add(tag)
 
-            sub_question.tags.add(headline)
-            question.tags.add(headline)
-
+        for special_tag in section['specialTags']:
+            tag = SpecialTags.objects.get(name=special_tag)
+            sub_question.tags.add(tag)
+            question.tags.add(tag)
+        
         sub_question.tags.add(author)
-
-        sub_question.level = ques['questionLevel']
-        level += ques['questionLevel']
+        
+        sub_question.level = section['hardnessLevel']
+        level += section['hardnessLevel']
 
         sub_question.save()
-
         question.sub_questions.add(sub_question)
 
-    question.level = level / len(sub_questions)
-
+    question.level = level / len(sections)
     question.save()
-    return Response({'check': 1, 'id': str(question.id)})
-
+    return Response({'id': str(question.id)})
 
 @api_view(['POST'])
 def add_suggested_quiz(request):
