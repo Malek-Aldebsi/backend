@@ -1303,7 +1303,7 @@ def add_or_edit_multiple_choice_question(request):
     source = data.pop('source', None)
     level = data.pop('level', None)
 
-    edit = question_id != None
+    edit = question_id != None and question_id != ''
     if edit:
         question = Question.objects.get(id=question_id).multiplechoicequestion
         question.choices.all().delete()
@@ -1371,7 +1371,7 @@ def add_or_edit_final_answer_question(request):
     source = data.pop('source', None)
     level = data.pop('level', None)
 
-    edit = question_id != None
+    edit = question_id != None and question_id != ''
     if edit:
         question = Question.objects.get(id=question_id).finalanswerquestion
         question.correct_answer.delete()
@@ -1424,7 +1424,7 @@ def add_or_edit_multi_section_question(request):
 
     source = data.pop('source', None)
 
-    edit = question_id != None
+    edit = question_id != None and question_id != ''
     if edit:
         question = Question.objects.get(id=question_id).multisectionquestion
         question.sub_questions.all().delete()
