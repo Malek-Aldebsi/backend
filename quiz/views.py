@@ -1310,6 +1310,7 @@ def add_or_edit_multiple_choice_question(request):
             old_choices_ids = list(question.choices.values_list('id', flat=True))
             # question.choices.all().delete()
             question.choices.clear()
+            question.save()
             AdminMultipleChoiceAnswer.objects.filter(id__in=old_choices_ids).delete()
             question.tags.clear()
             question.body = question_body
