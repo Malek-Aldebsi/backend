@@ -1307,11 +1307,7 @@ def add_or_edit_multiple_choice_question(request):
         edit = question_id != None and question_id != ''
         if edit:
             question = Question.objects.get(id=question_id).multiplechoicequestion
-            old_choices_ids = list(question.choices.values_list('id', flat=True))
-            # question.choices.all().delete()
             question.choices.clear()
-            question.save()
-            AdminMultipleChoiceAnswer.objects.filter(id__in=old_choices_ids).delete()
             question.tags.clear()
             question.body = question_body
             question.level = level
@@ -1379,7 +1375,6 @@ def add_or_edit_final_answer_question(request):
         edit = question_id != None and question_id != ''
         if edit:
             question = Question.objects.get(id=question_id).finalanswerquestion
-            question.correct_answer.delete()
             question.tags.clear()
             question.body = question_body
             question.level = level
