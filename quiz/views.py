@@ -6,6 +6,7 @@ from django.core.mail import send_mail
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import F, Value, IntegerField
+from django.db import transaction
 
 from school import settings
 from user.models import Account, Banner
@@ -1289,69 +1290,69 @@ def get_question(request):
 @api_view(['POST'])
 def add_or_edit_multiple_choice_question(request):
     data = request.data
+    with transaction.atomic():
+        question_id = data.pop('question_id', None)
 
-    question_id = data.pop('question_id', None)
+        question_body = data.pop('question_body', None)
+        image_base64 = data.pop('image', None)
 
-    question_body = data.pop('question_body', None)
-    image_base64 = data.pop('image', None)
+        choices = data.pop('choices', None)
 
-    choices = data.pop('choices', None)
+        headlines = data.pop('headlines', [])
+        special_tags = data.pop('special_tags', [])
 
-    headlines = data.pop('headlines', [])
-    special_tags = data.pop('special_tags', [])
+        source = data.pop('source', None)
+        level = data.pop('level', None)
 
-    source = data.pop('source', None)
-    level = data.pop('level', None)
-
-    edit = question_id != None and question_id != ''
-    if edit:
-        question = Question.objects.get(id=question_id).multiplechoicequestion
-        question.choices.all().delete()
-        question.tags.clear()
-        question.body = question_body
-        question.level = level
-    else:
-        question = MultipleChoiceQuestion.objects.create(body=question_body, level=level)
-        
-    if image_base64:
-        image_data = base64.b64decode(image_base64)
+        edit = question_id != None and question_id != ''
         if edit:
-            image_name = question.image.name or 'edited_image'
+            question = Question.objects.get(id=question_id).multiplechoicequestion
+            question.choices.all().delete()
+            question.tags.clear()
+            question.body = question_body
+            question.level = level
         else:
-            image_name = str(LastImageName.objects.first().name)
-            LastImageName.objects.update(name=F('name') + 1)
-        question.image = ContentFile(image_data, str(image_name) + '.png')
+            question = MultipleChoiceQuestion.objects.create(body=question_body, level=level)
+            
+        if image_base64:
+            image_data = base64.b64decode(image_base64)
+            if edit:
+                image_name = question.image.name or 'edited_image'
+            else:
+                image_name = str(LastImageName.objects.first().name)
+                LastImageName.objects.update(name=F('name') + 1)
+            question.image = ContentFile(image_data, str(image_name) + '.png')
+            
+        correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choices[0]['choice'])
+        question.choices.add(correct_answer)
+        question.correct_answer = correct_answer
+
+        for choice_info in choices[1:]:
+            choice = AdminMultipleChoiceAnswer.objects.create(body=choice_info['choice'], notes=choice_info['additionalInfo'])
+            question.choices.add(choice)
+
+        choices = list(question.choices.all())
+        random.shuffle(choices)
+        for index, choice in enumerate(choices):
+            choice.order = index
+            choice.save()
         
-    correct_answer = AdminMultipleChoiceAnswer.objects.create(body=choices[0]['choice'])
-    question.choices.add(correct_answer)
-    question.correct_answer = correct_answer
+        for headline in headlines:
+            headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
+            if headline['level'] == 1:
+                tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
+            else:
+                tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
+            question.tags.add(tag)
 
-    for choice_info in choices[1:]:
-        choice = AdminMultipleChoiceAnswer.objects.create(body=choice_info['choice'], notes=choice_info['additionalInfo'])
-        question.choices.add(choice)
+        author, _ = Author.objects.get_or_create(name=source)
+        question.tags.add(author)
 
-    choices = list(question.choices.all())
-    random.shuffle(choices)
-    for index, choice in enumerate(choices):
-        choice.order = index
-        choice.save()
-    
-    for headline in headlines:
-        headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
-        if headline['level'] == 1:
-            tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
-        else:
-            tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
-        question.tags.add(tag)
+        for special_tag in special_tags:
+            tag = SpecialTags.objects.get(name=special_tag)
+            question.tags.add(tag)
 
-    author, _ = Author.objects.get_or_create(name=source)
-    question.tags.add(author)
-
-    for special_tag in special_tags:
-        tag = SpecialTags.objects.get(name=special_tag)
-        question.tags.add(tag)
-
-    question.save()
+        question.save()
     return Response({'id': str(question.id)})
 
 @api_view(['POST'])
