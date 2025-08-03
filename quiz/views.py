@@ -1358,162 +1358,162 @@ def add_or_edit_multiple_choice_question(request):
 @api_view(['POST'])
 def add_or_edit_final_answer_question(request):
     data = request.data
+    with transaction.atomic():
+        question_id = data.pop('question_id', None)
 
-    question_id = data.pop('question_id', None)
+        question_body = data.pop('question_body', None)
+        image_base64 = data.pop('image', None)
 
-    question_body = data.pop('question_body', None)
-    image_base64 = data.pop('image', None)
+        answer = data.pop('answer', None)
 
-    answer = data.pop('answer', None)
+        headlines = data.pop('headlines', [])
+        special_tags = data.pop('special_tags', [])
 
-    headlines = data.pop('headlines', [])
-    special_tags = data.pop('special_tags', [])
+        source = data.pop('source', None)
+        level = data.pop('level', None)
 
-    source = data.pop('source', None)
-    level = data.pop('level', None)
-
-    edit = question_id != None and question_id != ''
-    if edit:
-        question = Question.objects.get(id=question_id).finalanswerquestion
-        question.correct_answer.delete()
-        question.tags.clear()
-        question.body = question_body
-        question.level = level
-    else:
-        question = FinalAnswerQuestion.objects.create(body=question_body, level=level)
-        
-    if image_base64:
-        image_data = base64.b64decode(image_base64)
+        edit = question_id != None and question_id != ''
         if edit:
-            image_name = question.image.name or 'edited_image'
+            question = Question.objects.get(id=question_id).finalanswerquestion
+            question.correct_answer.delete()
+            question.tags.clear()
+            question.body = question_body
+            question.level = level
         else:
-            image_name = str(LastImageName.objects.first().name)
-            LastImageName.objects.update(name=F('name') + 1)
-        question.image = ContentFile(image_data, str(image_name) + '.png')
-        
-    correct_answer = AdminFinalAnswer.objects.create(body=answer)
-    question.correct_answer = correct_answer
-    
-    for headline in headlines:
-        headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
-        if headline['level'] == 1:
-            tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
-        else:
-            tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
-        question.tags.add(tag)
-
-    author, _ = Author.objects.get_or_create(name=source)
-    question.tags.add(author)
-
-    for special_tag in special_tags:
-        tag = SpecialTags.objects.get(name=special_tag)
-        question.tags.add(tag)
-
-    question.save()
-    return Response({'id': str(question.id)})
-
-@api_view(['POST'])
-def add_or_edit_multi_section_question(request):
-    data = request.data
-
-    question_id = data.pop('question_id', None)
-
-    question_body = data.pop('question_body', None)
-    image_base64 = data.pop('image', None)
-
-    sections = data.pop('sections', None)
-
-    source = data.pop('source', None)
-
-    edit = question_id != None and question_id != ''
-    if edit:
-        question = Question.objects.get(id=question_id).multisectionquestion
-        question.sub_questions.all().delete()
-        question.tags.clear()
-        question.body = question_body
-    else:
-        question = MultiSectionQuestion.objects.create(body=question_body)
-        
-    if image_base64:
-        image_data = base64.b64decode(image_base64)
-        if edit:
-            image_name = question.image.name or 'edited_image'
-        else:
-            image_name = str(LastImageName.objects.first().name)
-            LastImageName.objects.update(name=F('name') + 1)
-        question.image = ContentFile(image_data, str(image_name) + '.png')
-    
-    
-    author, _ = Author.objects.get_or_create(name=source)
-    question.tags.add(author)
-
-    level = 0
-    for section in sections:
-        if section['type'] == 'finalAnswerQuestion':
-            correct_answer = AdminFinalAnswer.objects.create(body=section['answer'])
-            sub_question = FinalAnswerQuestion.objects.create(body=section['question'], correct_answer=correct_answer,
-                                                              sub=True)
-        elif section['type'] == 'multipleChoiceQuestion':
-            correct_answer = AdminMultipleChoiceAnswer.objects.create(body=section['choices'][0]['choice'])
-            sub_question = MultipleChoiceQuestion.objects.create(body=section['question'], correct_answer=correct_answer,
-                                                              sub=True)
-            sub_question.choices.add(correct_answer)
-            for choice_info in section['choices'][1:]:
-                choice = AdminMultipleChoiceAnswer.objects.create(body=choice_info['choice'], notes=choice_info['additionalInfo'])
-                sub_question.choices.add(choice)
-
-            choices = list(sub_question.choices.all())
-            random.shuffle(choices)
-            for index, choice in enumerate(choices):
-                choice.order = index
-                choice.save()
+            question = FinalAnswerQuestion.objects.create(body=question_body, level=level)
             
-        for headline in section['headlines']:
+        if image_base64:
+            image_data = base64.b64decode(image_base64)
+            if edit:
+                image_name = question.image.name or 'edited_image'
+            else:
+                image_name = str(LastImageName.objects.first().name)
+                LastImageName.objects.update(name=F('name') + 1)
+            question.image = ContentFile(image_data, str(image_name) + '.png')
+            
+        correct_answer = AdminFinalAnswer.objects.create(body=answer)
+        question.correct_answer = correct_answer
+        
+        for headline in headlines:
             headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
             if headline['level'] == 1:
                 tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
             else:
                 tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
-            sub_question.tags.add(tag)
             question.tags.add(tag)
 
-        for special_tag in section['specialTags']:
+        author, _ = Author.objects.get_or_create(name=source)
+        question.tags.add(author)
+
+        for special_tag in special_tags:
             tag = SpecialTags.objects.get(name=special_tag)
-            sub_question.tags.add(tag)
             question.tags.add(tag)
-        
-        sub_question.tags.add(author)
-        
-        sub_question.level = section['hardnessLevel']
-        level += section['hardnessLevel']
 
-        sub_question.save()
-        question.sub_questions.add(sub_question)
+        question.save()
+    return Response({'id': str(question.id)})
 
-    question.level = level / len(sections)
-    question.save()
+@api_view(['POST'])
+def add_or_edit_multi_section_question(request):
+    data = request.data
+    with transaction.atomic():
+        question_id = data.pop('question_id', None)
+
+        question_body = data.pop('question_body', None)
+        image_base64 = data.pop('image', None)
+
+        sections = data.pop('sections', None)
+
+        source = data.pop('source', None)
+
+        edit = question_id != None and question_id != ''
+        if edit:
+            question = Question.objects.get(id=question_id).multisectionquestion
+            question.sub_questions.all().delete()
+            question.tags.clear()
+            question.body = question_body
+        else:
+            question = MultiSectionQuestion.objects.create(body=question_body)
+            
+        if image_base64:
+            image_data = base64.b64decode(image_base64)
+            if edit:
+                image_name = question.image.name or 'edited_image'
+            else:
+                image_name = str(LastImageName.objects.first().name)
+                LastImageName.objects.update(name=F('name') + 1)
+            question.image = ContentFile(image_data, str(image_name) + '.png')
+        
+        
+        author, _ = Author.objects.get_or_create(name=source)
+        question.tags.add(author)
+
+        level = 0
+        for section in sections:
+            if section['type'] == 'finalAnswerQuestion':
+                correct_answer = AdminFinalAnswer.objects.create(body=section['answer'])
+                sub_question = FinalAnswerQuestion.objects.create(body=section['question'], correct_answer=correct_answer,
+                                                                sub=True)
+            elif section['type'] == 'multipleChoiceQuestion':
+                correct_answer = AdminMultipleChoiceAnswer.objects.create(body=section['choices'][0]['choice'])
+                sub_question = MultipleChoiceQuestion.objects.create(body=section['question'], correct_answer=correct_answer,
+                                                                sub=True)
+                sub_question.choices.add(correct_answer)
+                for choice_info in section['choices'][1:]:
+                    choice = AdminMultipleChoiceAnswer.objects.create(body=choice_info['choice'], notes=choice_info['additionalInfo'])
+                    sub_question.choices.add(choice)
+
+                choices = list(sub_question.choices.all())
+                random.shuffle(choices)
+                for index, choice in enumerate(choices):
+                    choice.order = index
+                    choice.save()
+                
+            for headline in section['headlines']:
+                headline_part, parent_part = map(str.strip, headline['headline-parent'].split(' -- '))
+                if headline['level'] == 1:
+                    tag = H1.objects.get(name=headline_part, parent_lesson__name=parent_part)
+                else:
+                    tag = HeadLine.objects.get(name=headline_part, parent_headline__name=parent_part, level=headline['level'])
+                sub_question.tags.add(tag)
+                question.tags.add(tag)
+
+            for special_tag in section['specialTags']:
+                tag = SpecialTags.objects.get(name=special_tag)
+                sub_question.tags.add(tag)
+                question.tags.add(tag)
+            
+            sub_question.tags.add(author)
+            
+            sub_question.level = section['hardnessLevel']
+            level += section['hardnessLevel']
+
+            sub_question.save()
+            question.sub_questions.add(sub_question)
+
+        question.level = level / len(sections)
+        question.save()
     return Response({'id': str(question.id)})
 
 @api_view(['POST'])
 def create_suggested_quiz(request):
     data = request.data
+    with transaction.atomic():
+        quiz_title = data.pop('quiz_title', None)
 
-    quiz_title = data.pop('quiz_title', None)
+        quiz_subject = data.pop('quiz_subject', {})
 
-    quiz_subject = data.pop('quiz_subject', {})
+        quiz_duration = data.pop('quiz_duration', None)
 
-    quiz_duration = data.pop('quiz_duration', None)
+        questions_ids = data.pop('questions_ids', None)
 
-    questions_ids = data.pop('questions_ids', None)
+        subject = Subject.objects.get(name=quiz_subject['name'], grade=quiz_subject['grade'])
+        quiz = AdminQuiz.objects.create(name=quiz_title, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
 
-    subject = Subject.objects.get(name=quiz_subject['name'], grade=quiz_subject['grade'])
-    quiz = AdminQuiz.objects.create(name=quiz_title, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
+        for question_id in questions_ids:
+            question = Question.objects.get(id=question_id)
+            quiz.questions.add(question)
 
-    for question_id in questions_ids:
-        question = Question.objects.get(id=question_id)
-        quiz.questions.add(question)
-
-    quiz.save()
+        quiz.save()
     return Response(1)
 
 
