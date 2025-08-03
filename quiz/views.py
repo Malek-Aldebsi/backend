@@ -1494,21 +1494,21 @@ def add_or_edit_multi_section_question(request):
     return Response({'id': str(question.id)})
 
 @api_view(['POST'])
-def add_suggested_quiz(request):
+def create_suggested_quiz(request):
     data = request.data
 
-    quiz_name = data.pop('quiz_name', None)
+    quiz_title = data.pop('quiz_title', None)
 
     quiz_subject = data.pop('quiz_subject', None)
 
     quiz_duration = data.pop('quiz_duration', None)
 
-    questions = data.pop('questions', None)
+    questions_ids = data.pop('questions_ids', None)
 
     subject = Subject.objects.get(name=quiz_subject)
-    quiz = AdminQuiz.objects.create(name=quiz_name, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
+    quiz = AdminQuiz.objects.create(name=quiz_title, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
 
-    for question_id in questions:
+    for question_id in questions_ids:
         question = Question.objects.get(id=question_id)
         quiz.questions.add(question)
 
