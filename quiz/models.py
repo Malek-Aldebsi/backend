@@ -292,14 +292,14 @@ class Question(models.Model):
 
 
 class FinalAnswerQuestion(Question):
-    correct_answer = models.ForeignKey(AdminFinalAnswer, db_constraint=False, null=True, blank=True, on_delete=models.CASCADE)
+    correct_answer = models.ForeignKey(AdminFinalAnswer, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
 
 class ReelQuestion(Question):
-    correct_answer = models.ForeignKey(AdminFinalAnswer, db_constraint=False, null=True, blank=True, on_delete=models.CASCADE)
+    correct_answer = models.ForeignKey(AdminFinalAnswer, db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     likes = models.IntegerField(default=0, blank=True)
 
 class MultipleChoiceQuestion(Question):
-    correct_answer = models.ForeignKey(AdminMultipleChoiceAnswer, related_name='correct_answer', db_constraint=False, null=True, blank=True, on_delete=models.CASCADE)
+    correct_answer = models.ForeignKey(AdminMultipleChoiceAnswer, related_name='correct_answer', db_constraint=False, null=True, blank=True, on_delete=models.SET_NULL)
     choices = models.ManyToManyField(AdminMultipleChoiceAnswer, related_name='choices', symmetrical=False, blank=True) 
 
 class MultiSectionQuestion(Question):
