@@ -1499,13 +1499,13 @@ def create_suggested_quiz(request):
 
     quiz_title = data.pop('quiz_title', None)
 
-    quiz_subject = data.pop('quiz_subject', None)
+    quiz_subject = data.pop('quiz_subject', {})
 
     quiz_duration = data.pop('quiz_duration', None)
 
     questions_ids = data.pop('questions_ids', None)
 
-    subject = Subject.objects.get(name=quiz_subject)
+    subject = Subject.objects.get(name=quiz_subject['name'], grade=quiz_subject['grade'])
     quiz = AdminQuiz.objects.create(name=quiz_title, subject=subject, duration=datetime.timedelta(minutes=int(quiz_duration)))
 
     for question_id in questions_ids:
