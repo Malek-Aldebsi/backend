@@ -1306,7 +1306,8 @@ def add_or_edit_multiple_choice_question(request):
 
         edit = question_id != None and question_id != ''
         if edit:
-            question = MultipleChoiceQuestion.objects.get(id=question_id)
+            base_question = Question.objects.get(id=question_id)
+            question = base_question.multiplechoicequestion
             question.choices.all().delete()
             question.tags.clear()
             question.body = question_body
