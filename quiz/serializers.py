@@ -84,9 +84,9 @@ class FinalAnswerQuestionSerializer(serializers.ModelSerializer):
         for tag in tags:
             headbase = tag.headbase
             if hasattr(headbase, 'h1'):
-                headlines.append({'headline': headbase.name, 'level': 1})
+                headlines.append({'headline': headbase.name, 'parent': headbase.h1.parent_lesson.name, 'level': 1})
             else:
-                headlines.append({'headline': headbase.name, 'level': headbase.headline.level})
+                headlines.append({'headline': headbase.name, 'parent': headbase.headline.parent_headline.name, 'level': headbase.headline.level})
         return headlines
 
     def get_idealDuration(self, obj):
@@ -168,9 +168,9 @@ class MultipleChoiceQuestionSerializer(serializers.ModelSerializer):
         for tag in tags:
             headbase = tag.headbase
             if hasattr(headbase, 'h1'):
-                headlines.append({'headline': headbase.name, 'level': 1})
+                headlines.append({'headline': headbase.name, 'parent': headbase.h1.parent_lesson.name, 'level': 1})
             else:
-                headlines.append({'headline': headbase.name, 'level': headbase.headline.level})
+                headlines.append({'headline': headbase.name, 'parent': headbase.headline.parent_headline.name, 'level': headbase.headline.level})
         return headlines
 
     def get_idealDuration(self, obj):
@@ -244,8 +244,8 @@ class WritingQuestionSerializer(serializers.ModelSerializer):
     def get_headlines(self, obj):
         tag = obj.tags.exclude(headbase=None).first()
         headbase = tag.headbase
-        return [{'headline': headbase.name, 'level': 1}]
-
+        return [{'headline': headbase.name, 'parent': headbase.h1.parent_lesson.name, 'level': 1}]
+            
     def get_idealDuration(self, obj):
         attempt_duration = obj.idealDuration
 
