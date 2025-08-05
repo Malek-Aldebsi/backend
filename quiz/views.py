@@ -388,9 +388,13 @@ def get_writing_question(request):
         return serializer.data
 
     data = request.data
-    tag = data.pop('tag', None)
+    subject = data.pop('subject', None)
     if _check_user(data):
         user = get_user(data)
+        if subject == 'اللغة العربية':
+            tag = 'مهارة الكتابة للغة العربية'
+        elif subject == 'اللغة الإنجليزية':
+            tag = 'مهارة الكتابة للغة الإنجليزية'
         h1 = H1.objects.get(name=tag)
         question = get_questions(user.id, h1)
         return Response(question)
