@@ -540,15 +540,12 @@ def update_reel_last_tap_at(request):
 def submit_writing_question(request):
     data = request.data
     question = data.pop('question', None)
-    answer = data.pop('image', None)
+    answer = data.pop('answer', None)
     duration = data.pop('attemptDuration', None)
-    contact_method = data.pop('contactMethod', None)
 
     if _check_user(data):
         # answer question quiz user
         user = get_user(data)
-        user.contact_method = contact_method
-        user.save()
 
         question = Question.objects.get(id=question)
         subject = question.tags.exclude(headbase=None).first().headbase.h1.parent_lesson.parent_module.parent_subject
