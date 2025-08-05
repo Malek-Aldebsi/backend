@@ -541,7 +541,7 @@ def submit_writing_question(request):
     data = request.data
     question = data.pop('question', None)
     answer = data.pop('answer', None)
-    duration = data.pop('attemptDuration', None)
+    duration = data.pop('writing_duration', None)
 
     if _check_user(data):
         # answer question quiz user
