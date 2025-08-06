@@ -1038,6 +1038,7 @@ def quiz_history(request):
                             'question_num': 10,
                             'correct_question_num': answer.mark,
                             'skills': {answer.question.tags.exclude(headbase=None).first().headbase.h1.name},
+                            'is_writing': True
                         })
                     continue
 
@@ -1092,6 +1093,7 @@ def quiz_history(request):
                     'question_num': question_num,
                     'correct_question_num': correct_question_num,
                     'skills': modules if len(modules) > 5 else lessons if len(lessons) > 5 else h1s,
+                    'is_writing': False
                 })
             except:
                 print(2)
