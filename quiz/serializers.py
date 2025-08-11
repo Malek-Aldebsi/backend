@@ -248,14 +248,8 @@ class WritingQuestionSerializer(serializers.ModelSerializer):
             
     def get_idealDuration(self, obj):
         attempt_duration = obj.idealDuration
-
-        hours = attempt_duration.seconds // 3600
-        minutes = (attempt_duration.seconds % 3600) // 60
-        seconds = attempt_duration.seconds % 60
-
-        formatted_duration = "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
-        return formatted_duration
-
+        return attempt_duration.seconds
+    
     def get_saved(self, obj):        
         user_id = self.context.get('user_id')
         
@@ -372,7 +366,6 @@ class UserWritingAnswerSerializer(serializers.ModelSerializer):
     def get_duration(self, obj):
         attempt_duration = obj.duration
         return attempt_duration.seconds
-
 
 class UserAnswerSerializer(serializers.ModelSerializer):
 

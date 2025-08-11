@@ -847,7 +847,7 @@ def quiz_review(request):
                      'quiz_duration': None,
                      'quiz_subject': {'id': quiz.subject.id, 'name': quiz.subject.name},
                      'best_worst_skills': h1s, 'statements': statements})
-
+             
         mark_based_h1s = sorted(h1s.items(),
                                 key=lambda x: (x[1]['correct'] + x[1]['all'], x[1]['correct']), reverse=True)
         mark_based_lessons = sorted(lessons.items(),
