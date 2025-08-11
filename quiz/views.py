@@ -846,7 +846,7 @@ def quiz_review(request):
                      'ideal_duration': ideal_duration, 'attempt_duration': attempt_duration,
                      'quiz_duration': None,
                      'quiz_subject': {'id': quiz.subject.id, 'name': quiz.subject.name},
-                     'best_worst_skills': h1s, 'statements': statements})
+                     'best_worst_skills': h1s, 'statements': statements, 'is_writing': True})
              
         mark_based_h1s = sorted(h1s.items(),
                                 key=lambda x: (x[1]['correct'] + x[1]['all'], x[1]['correct']), reverse=True)
@@ -876,7 +876,7 @@ def quiz_review(request):
              'ideal_duration': ideal_duration, 'attempt_duration': attempt_duration,
              'quiz_duration': quiz.duration.total_seconds() if quiz.duration is not None else None,
              'quiz_subject': {'id': quiz.subject.id, 'name': quiz.subject.name},
-             'best_worst_skills': best_worst_skills, 'statements': statements})
+             'best_worst_skills': best_worst_skills, 'statements': statements, 'is_writing': False})
     else:
         return Response(0)
 
