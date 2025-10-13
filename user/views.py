@@ -150,6 +150,10 @@ def sign_up(request):
                 'anonymous': False,
             }
         )
+        user_account = Account.objects.get(user=user)
+        package = Packages.objects.get(id="aa678efb-e799-43aa-97df-08b6326029c1")
+        user_account.pkg_list.add(package)
+        user_account.save()
         return Response({'status': 'success'})
     except IntegrityError as e:
         return Response(
