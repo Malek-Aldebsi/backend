@@ -464,7 +464,7 @@ def get_reels(request):
         activate_first_semester = user_account.pkg_list.filter(id='f6de43ae-d067-4854-952a-76b0827163aa').exists() or user_account.pkg_list.filter(id='aa678efb-e799-43aa-97df-08b6326029c1').exists()
         activate_second_semester = user_account.pkg_list.filter(id='48097502-178d-48c8-a9c7-93bd6cea649a').exists() or user_account.pkg_list.filter(id='aa678efb-e799-43aa-97df-08b6326029c1').exists()
         return Response({'reels':QuestionSerializer(reels, many=True, context={'user_id': user.id}).data, 
-                         'max_reels_per_day':30, 
+                         'max_reels_per_day':1000000, 
                          'subscribed': activate_first_semester and activate_second_semester,
                          'activate_english_reels': activate_english_pkg,
                          'activate_arabic_reels': activate_arabic_pkg,
