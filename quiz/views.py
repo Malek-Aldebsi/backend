@@ -34,7 +34,7 @@ from .utils import mark_final_answer_question, mark_multiple_choice_question, ma
 
 import itertools
 from django.db.models import Case, When, Value, FloatField, F, Max
-from django.db.models.functions import Random
+from django.db.models.functions import Random, TruncDate
 
 ######################################################################
 # TODO the errors must be handeled in this way return Response({'status': 'unauthorized'}, status=403)
@@ -54,30 +54,39 @@ def dashboard(request):
         user_quizzes = UserQuiz.objects.filter(user=user)
         num_of_user_quizzes = user_quizzes.count()
 
-        user_answers = UserAnswer.objects.filter(quiz__in=user_quizzes).filter(Q(userfinalanswer__body__isnull=False)|Q(usermultiplechoiceanswer__choice__isnull=False)).distinct()
+        user_answers = UserAnswer.objects.filter(quiz__in=user_quizzes).filter(Q(userfinalanswer__body__isnull=False)|Q(usermultiplechoiceanswer__choice__isnull=False)).select_related("quiz").distinct()
 
         num_of_user_answers = user_answers.count()
 
         total_duration = user_answers.aggregate(total_duration=Sum('duration'))['total_duration']
-        if total_duration is not None:
-            total_duration_hours = total_duration.total_seconds() // 3600
-        else:
-            total_duration_hours = 0
+        total_duration_hours = total_duration.total_seconds() // 3600 if total_duration else 0
 
-        user_answers_by_day = {}
+        answers_by_date = (
+            user_answers
+            .annotate(day=TruncDate("quiz__creationDate"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by()
+        )
+
+        # Convert to a 365-day dict
         current_year = datetime.datetime.now().year
-        for i in range(1, 366):
-            date = datetime.datetime(current_year, 1, 1) + datetime.timedelta(days=i - 1)
+        start = datetime.date(current_year, 1, 1)
+        end = datetime.date(current_year, 12, 31)
 
-            user_quizzes = UserQuiz.objects.filter(user=user, creationDate__date=date)
-            answers = UserAnswer.objects.filter(quiz__in=user_quizzes).filter(Q(userfinalanswer__body__isnull=False) | Q(usermultiplechoiceanswer__choice__isnull=False)).distinct().count()
-            user_answers_by_day[i] = answers
+        # Initialize all days to 0
+        days_in_year = (end - start).days + 1
+        user_answers_by_day = {i: 0 for i in range(1, days_in_year + 1)}
 
+        # Fill dict with real data
+        for row in answers_by_date:
+            day_number = (row["day"] - start).days + 1
+            user_answers_by_day[day_number] = row["count"]
 
         banners = Banner.objects.filter(active=True).order_by('created_at')
         banners_serializer = BannerSerializer(banners, many=True)
 
-        user_account = Account.objects.get(user=user)
+        user_account = Account.objects.select_related("user").get(user=user)
         pkgs = user_account.pkg_list.all().values_list('app_store_product_id', flat=True)
         return Response({'user_info': user_serializer, 'num_of_user_quizzes': num_of_user_quizzes,
                          'num_of_user_answers': num_of_user_answers, 'total_duration': total_duration_hours,
